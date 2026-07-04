@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer & Career Assistant</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-wand-magic-sparkles logo-icon"></i>
+                <div class="brand-text">
+                    <h1>RESUME<span>AI</span></h1>
+                    <p>Career Assistant</p>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#dashboard" class="nav-item active" data-view="dashboard">
+                    <i class="fa-solid fa-chart-simple"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#resumes" class="nav-item" data-view="resumes">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>My Resumes</span>
+                </a>
+                <a href="#profile" class="nav-item" data-view="profile">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span>Career Profile</span>
+                </a>
+            </nav>
+            <div class="user-status-card">
+                <div class="status-avatar">G</div>
+                <div class="status-info">
+                    <h4>Guest User</h4>
+                    <p><i class="fa-solid fa-circle status-dot"></i> Active Session</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Navbar -->
+            <header class="top-nav">
+                <div class="nav-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" placeholder="Search resumes, skills, or education..." disabled>
+                </div>
+                <div class="nav-actions">
+                    <div class="mode-badge"><i class="fa-solid fa-bolt"></i> Offline Mode</div>
+                    <div class="profile-preview">
+                        <span id="user-display-name">Guest User</span>
+                        <div class="avatar">G</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="content-view active">
+                <div class="welcome-banner">
+                    <div class="welcome-text">
+                        <h2>Welcome Back, <span id="welcome-name">Guest User</span>!</h2>
+                        <p>Analyze your resume, extract key details, and build your career profile without API keys.</p>
+                    </div>
+                    <div class="welcome-stats">
+                        <div class="stat-circle">
+                            <span id="stat-ats-score">--</span>
+                            <p>ATS Rating</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fa-solid fa-file-pdf"></i></div>
+                        <div class="stat-data">
+                            <h3 id="stat-total-resumes">0</h3>
+                            <p>Resumes Uploaded</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon cyan"><i class="fa-solid fa-gears"></i></div>
+                        <div class="stat-data">
+                            <h3 id="stat-parsed-ok">0</h3>
+                            <p>Successfully Parsed</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-user-check"></i></div>
+                        <div class="stat-data">
+                            <h3 id="stat-profile-comp">0%</h3>
+                            <p>Profile Completeness</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-body">
+                    <!-- Resume Upload Section -->
+                    <div class="card upload-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload New Resume</h3>
+                            <p>Drag and drop your file or browse to begin instant local parsing</p>
+                        </div>
+                        <div class="drag-drop-zone" id="drop-zone">
+                            <input type="file" id="file-input" accept=".pdf,.docx" style="display: none;">
+                            <div class="zone-content">
+                                <i class="fa-solid fa-file-arrow-up zone-icon"></i>
+                                <h4>Drag & Drop your resume here</h4>
+                                <p>Supports PDF & DOCX formats (Max 10MB)</p>
+                                <button class="btn btn-primary" id="btn-browse">Browse Files</button>
+                            </div>
+                        </div>
+                        <div class="upload-progress-container" id="upload-progress-container" style="display: none;">
+                            <div class="file-info">
+                                <i class="fa-solid fa-file-invoice" id="upload-file-icon"></i>
+                                <span class="filename" id="upload-filename">resume.pdf</span>
+                                <span class="filesize" id="upload-filesize">0 KB</span>
+                            </div>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                            </div>
+                            <div class="progress-status">
+                                <span id="progress-text">Uploading...</span>
+                                <span id="progress-percent">0%</span>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <span>All resume parsing is executed entirely offline using PDFBox and Apache POI. Your document content does not leave your machine.</span>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Section -->
+                    <div class="card recent-activity-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Resumes</h3>
+                            <a href="#resumes" class="view-all-link" id="link-view-all-resumes">View All</a>
+                        </div>
+                        <div class="recent-list" id="recent-resumes-list">
+                            <div class="empty-state">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <p>No resumes uploaded yet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resumes View -->
+            <section id="view-resumes" class="content-view">
+                <div class="view-header">
+                    <h2>Resume History & Version Control</h2>
+                    <p>Manage your uploaded resumes, check parsing status, and view structured reports.</p>
+                </div>
+                <div class="card mt-4">
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>File Name</th>
+                                    <th>Upload Date</th>
+                                    <th>File Size</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resumes-table-body">
+                                <tr>
+                                    <td colspan="5" class="text-center py-5">
+                                        <div class="spinner-container">
+                                            <i class="fa-solid fa-circle-notch fa-spin"></i> Loading resume history...
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Profile View -->
+            <section id="view-profile" class="content-view">
+                <div class="view-header flex-header">
+                    <div>
+                        <h2>Career Profile Summary</h2>
+                        <p>This information is automatically parsed from your resume and is editable below.</p>
+                    </div>
+                    <button class="btn btn-success" id="btn-save-profile">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Profile
+                    </button>
+                </div>
+
+                <div class="profile-grid mt-4">
+                    <!-- Left Column: Personal info & Skills -->
+                    <div class="profile-left-col">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fa-solid fa-address-card"></i> Personal Information</h3>
+                            </div>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="prof-name">Full Name</label>
+                                    <input type="text" id="prof-name" placeholder="E.g. John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-email">Contact Email</label>
+                                    <input type="email" id="prof-email" placeholder="E.g. john@example.com">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-phone">Phone Number</label>
+                                    <input type="text" id="prof-phone" placeholder="E.g. +1 123 456 7890">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-linkedin">LinkedIn Profile URL</label>
+                                    <input type="text" id="prof-linkedin" placeholder="E.g. linkedin.com/in/username">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-github">GitHub Profile URL</label>
+                                    <input type="text" id="prof-github" placeholder="E.g. github.com/username">
+                                </div>
+                                <div class="form-group">
+                                    <label for="prof-portfolio">Portfolio URL</label>
+                                    <input type="text" id="prof-portfolio" placeholder="E.g. portfolio.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-header flex-header">
+                                <h3><i class="fa-solid fa-code"></i> Technical & Soft Skills</h3>
+                                <button class="btn btn-sm btn-outline" id="btn-add-skill"><i class="fa-solid fa-plus"></i> Add</button>
+                            </div>
+                            <div class="skills-manager">
+                                <div class="skills-tags" id="profile-skills-container">
+                                    <!-- Dynamic skill tags -->
+                                </div>
+                                <div class="skill-input-group mt-3" id="skill-input-container" style="display: none;">
+                                    <input type="text" id="new-skill-input" placeholder="Enter skill (e.g. Java)">
+                                    <button class="btn btn-sm btn-primary" id="btn-confirm-add-skill">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Experience, Education, Projects -->
+                    <div class="profile-right-col">
+                        <!-- Education Section -->
+                        <div class="card">
+                            <div class="card-header flex-header">
+                                <h3><i class="fa-solid fa-graduation-cap"></i> Education</h3>
+                                <button class="btn btn-sm btn-outline" id="btn-add-edu"><i class="fa-solid fa-plus"></i> Add</button>
+                            </div>
+                            <div class="education-list" id="profile-education-container">
+                                <!-- Dynamic education cards -->
+                            </div>
+                        </div>
+
+                        <!-- Work Experience Section -->
+                        <div class="card mt-4">
+                            <div class="card-header flex-header">
+                                <h3><i class="fa-solid fa-briefcase"></i> Work Experience</h3>
+                                <button class="btn btn-sm btn-outline" id="btn-add-exp"><i class="fa-solid fa-plus"></i> Add</button>
+                            </div>
+                            <div class="experience-list" id="profile-experience-container">
+                                <!-- Dynamic experience cards -->
+                            </div>
+                        </div>
+
+                        <!-- Projects Section -->
+                        <div class="card mt-4">
+                            <div class="card-header flex-header">
+                                <h3><i class="fa-solid fa-diagram-project"></i> Projects</h3>
+                                <button class="btn btn-sm btn-outline" id="btn-add-project"><i class="fa-solid fa-plus"></i> Add</button>
+                            </div>
+                            <div class="projects-list" id="profile-projects-container">
+                                <!-- Dynamic project cards -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Parsed Details Modal Drawer -->
+    <div class="modal-overlay" id="parsed-details-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div>
+                    <h3 id="modal-resume-title">Resume Parsing Report</h3>
+                    <p class="text-muted" id="modal-resume-meta">Filename: resume.pdf | Parsed Successfully</p>
+                </div>
+                <button class="btn-close" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-tab="tab-structured">Structured View</button>
+                    <button class="modal-tab" data-tab="tab-json">Raw JSON</button>
+                </div>
+                <div class="tab-content active" id="tab-structured">
+                    <div class="structured-report">
+                        <div class="report-section">
+                            <h4><i class="fa-solid fa-address-card text-purple"></i> Contact Details</h4>
+                            <div class="details-grid">
+                                <div class="detail-item"><strong>Name:</strong> <span id="rep-name">--</span></div>
+                                <div class="detail-item"><strong>Email:</strong> <span id="rep-email">--</span></div>
+                                <div class="detail-item"><strong>Phone:</strong> <span id="rep-phone">--</span></div>
+                                <div class="detail-item"><strong>LinkedIn:</strong> <span id="rep-linkedin">--</span></div>
+                                <div class="detail-item"><strong>GitHub:</strong> <span id="rep-github">--</span></div>
+                                <div class="detail-item"><strong>Portfolio:</strong> <span id="rep-portfolio">--</span></div>
+                            </div>
+                        </div>
+                        <hr class="section-divider">
+                        <div class="report-section">
+                            <h4><i class="fa-solid fa-code text-cyan"></i> Extracted Skills</h4>
+                            <div class="report-skills-tags" id="rep-skills">
+                                <!-- Skill tags -->
+                            </div>
+                        </div>
+                        <hr class="section-divider">
+                        <div class="report-section">
+                            <h4><i class="fa-solid fa-graduation-cap text-purple"></i> Education History</h4>
+                            <div class="report-list" id="rep-education">
+                                <!-- Education list -->
+                            </div>
+                        </div>
+                        <hr class="section-divider">
+                        <div class="report-section">
+                            <h4><i class="fa-solid fa-briefcase text-cyan"></i> Professional Experience</h4>
+                            <div class="report-list" id="rep-experience">
+                                <!-- Experience list -->
+                            </div>
+                        </div>
+                        <hr class="section-divider">
+                        <div class="report-section">
+                            <h4><i class="fa-solid fa-diagram-project text-green"></i> Key Projects</h4>
+                            <div class="report-list" id="rep-projects">
+                                <!-- Projects list -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="tab-json">
+                    <pre><code class="json-code" id="raw-json-content">Loading...</code></pre>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-close-modal-footer">Close Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="js/app.js"></script>
+</body>
+</html>
