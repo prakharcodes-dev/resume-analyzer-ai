@@ -31,3 +31,26 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# Uploaded resumes
+uploads/
+
+# Local database
+*.mv.db
+
+# Maven build files
+target/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IntelliJ IDEA
+.idea/
+
+# VS Code
+.vscode/
