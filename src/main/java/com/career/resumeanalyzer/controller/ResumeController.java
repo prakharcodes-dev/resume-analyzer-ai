@@ -7,6 +7,7 @@ import com.career.resumeanalyzer.repository.UploadedResumeRepository;
 import com.career.resumeanalyzer.repository.UserProfileRepository;
 import com.career.resumeanalyzer.repository.UserRepository;
 import com.career.resumeanalyzer.service.ResumeParserService;
+import com.career.resumeanalyzer.service.ResumeAnalysisService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ public class ResumeController {
 
     @Autowired
     private ResumeParserService resumeParserService;
+
+    @Autowired
+    private ResumeAnalysisService resumeAnalysisService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -159,6 +163,61 @@ public class ResumeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
         }
         return ResponseEntity.ok(optionalResume.get());
+    }
+
+    @GetMapping("/{id}/ats")
+    public ResponseEntity<?> getResumeAtsReport(@PathVariable("id") Long id) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String report = resumeAnalysisService.getAtsReport(resume, rawText);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @GetMapping("/{id}/ai-analysis")
+    public ResponseEntity<?> getResumeAiAnalysis(@PathVariable("id") Long id) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String report = resumeAnalysisService.getAiAnalysis(resume, rawText);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @PostMapping("/{id}/match")
+    public ResponseEntity<?> matchJobDescription(@PathVariable("id") Long id, @RequestBody JsonNode requestBody) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        if (requestBody == null || !requestBody.has("jobDescription")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Missing jobDescription parameter.\"}");
+        }
+        String jdText = requestBody.get("jobDescription").asText();
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String report = resumeAnalysisService.matchJobDescription(resume, rawText, jdText);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
     }
 
     @DeleteMapping("/{id}")

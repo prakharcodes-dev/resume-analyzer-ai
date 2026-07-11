@@ -1268,11 +1268,421 @@ body {
     font-size: 0.85rem;
 }
 
+/* ----------------------------------------------------
+   NEW RESUME ANALYSIS FEATURES STYLING
+   ---------------------------------------------------- */
+
+/* ATS Checker Layout */
+.ats-report-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0.5rem;
+}
+
+.ats-score-overview {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    padding: 1.5rem;
+    background: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.score-circle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.score-ring-wrapper {
+    background: var(--bg-card);
+    padding: 8px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.score-ring {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: conic-gradient(var(--primary) 0deg, rgba(255, 255, 255, 0.05) 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background 0.5s ease-out;
+}
+
+.score-ring::before {
+    content: "";
+    position: absolute;
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    background: var(--bg-card);
+}
+
+.score-ring span {
+    position: relative;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.score-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.compatibility-badge-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: max-content;
+}
+
+.badge-success { background: #d1fae5; color: var(--success); }
+.badge-info { background: #e0f2fe; color: var(--secondary); }
+.badge-warning { background: #fef3c7; color: var(--warning); }
+.badge-danger { background: #fee2e2; color: var(--danger); }
+
+.badge-subtitle {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.ats-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.breakdown-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.breakdown-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.breakdown-info span {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.breakdown-info strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.ats-progress-bar {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.ats-progress-bar .fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--primary);
+    border-radius: 3px;
+    transition: width 0.4s ease-out;
+}
+
+/* Job Match Section styling */
+.job-match-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 0.5rem;
+}
+
+.jd-input-section h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.jd-input-section textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.jd-input-section textarea:focus {
+    border-color: var(--primary);
+}
+
+.jd-file-picker {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.match-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    background: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    align-items: center;
+}
+
+.match-percentage-card {
+    text-align: center;
+    padding: 1.5rem;
+    background: #ffffff;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+}
+
+.match-percentage-card h3 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 0.25rem;
+}
+
+.match-percentage-card p {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.match-metrics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.metric-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0.8rem;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 0.8rem;
+}
+
+.metric-name {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.metric-val {
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.missing-items-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.missing-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    background: #ffffff;
+}
+
+.missing-card h5 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.missing-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.missing-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+.skill-missing { background: #fee2e2; color: #b91c1c; }
+.kw-missing { background: #fef3c7; color: #b45309; }
+
+/* AI Analysis Styling */
+.ai-analysis-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 0.5rem;
+}
+
+.analysis-status-card {
+    background: #f9fafb;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+}
+
+.analysis-status-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.analysis-sections-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.analysis-detail-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1rem;
+    background: #ffffff;
+}
+
+.analysis-detail-card.full-width-card {
+    grid-column: 1 / -1;
+}
+
+.analysis-detail-card h5 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.4rem;
+}
+
+.analysis-box p {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+}
+
+.analysis-box p strong {
+    color: var(--text-main);
+}
+
+.analysis-bullets {
+    padding-left: 1.1rem;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+}
+
+.analysis-bullets li {
+    margin-bottom: 0.25rem;
+}
+
+.style-box-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.style-box-split h6 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.text-danger-light {
+    color: #c2410c;
+}
+
+.error-bullets li {
+    position: relative;
+    list-style: none;
+    padding-left: 0.25rem;
+}
+
+.error-bullets li::before {
+    content: "•";
+    color: var(--danger);
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}
+
+.italic {
+    font-style: italic;
+}
+
+.ml-2 { margin-left: 0.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 0.75rem; }
+
 @media(max-width: 1024px) {
     .dashboard-body {
         grid-template-columns: 1fr;
     }
     .profile-grid {
+        grid-template-columns: 1fr;
+    }
+    .analysis-sections-grid {
+        grid-template-columns: 1fr;
+    }
+    .style-box-split {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .match-overview-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .missing-items-grid {
         grid-template-columns: 1fr;
     }
 }

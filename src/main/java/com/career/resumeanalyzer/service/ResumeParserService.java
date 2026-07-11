@@ -42,6 +42,26 @@ public class ResumeParserService {
         return structureRawText(rawText, file.getOriginalFilename());
     }
 
+    /**
+     * Extracts raw text from a saved file on disk.
+     */
+    public String extractRawText(String filePath, String contentType) throws IOException {
+        java.io.File file = new java.io.File(filePath);
+        if (!file.exists()) {
+            throw new java.io.FileNotFoundException("File not found at: " + filePath);
+        }
+        if (contentType != null && contentType.equals("application/pdf")) {
+            return extractTextFromPdf(java.nio.file.Files.readAllBytes(file.toPath()));
+        } else if (contentType != null && (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
+                || contentType.equals("application/msword"))) {
+            try (java.io.InputStream is = java.nio.file.Files.newInputStream(file.toPath())) {
+                return extractTextFromDocx(is);
+            }
+        } else {
+            throw new IllegalArgumentException("Unsupported file type: " + contentType);
+        }
+    }
+
     private String extractTextFromPdf(byte[] bytes) throws IOException {
         try (PDDocument document = Loader.loadPDF(bytes)) {
             PDFTextStripper stripper = new PDFTextStripper();

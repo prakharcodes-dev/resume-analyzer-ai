@@ -304,6 +304,9 @@
             <div class="modal-body">
                 <div class="modal-tabs">
                     <button class="modal-tab active" data-tab="tab-structured">Structured View</button>
+                    <button class="modal-tab" data-tab="tab-ats">ATS Checker</button>
+                    <button class="modal-tab" data-tab="tab-match">Job Match</button>
+                    <button class="modal-tab" data-tab="tab-ai">AI Analysis</button>
                     <button class="modal-tab" data-tab="tab-json">Raw JSON</button>
                 </div>
                 <div class="tab-content active" id="tab-structured">
@@ -349,6 +352,204 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ATS Checker Tab -->
+                <div class="tab-content" id="tab-ats">
+                    <div class="ats-report-container">
+                        <div class="ats-score-overview">
+                            <div class="score-circle-container">
+                                <div class="score-ring-wrapper">
+                                    <div class="score-ring" id="ats-score-ring">
+                                        <span id="ats-score-value">0%</span>
+                                    </div>
+                                </div>
+                                <p class="score-label">Overall ATS Score</p>
+                            </div>
+                            <div class="compatibility-badge-container">
+                                <span class="badge" id="ats-compatibility-badge">Checking...</span>
+                                <p class="badge-subtitle">ATS Compatibility Rating</p>
+                            </div>
+                        </div>
+                        <div class="ats-breakdown-grid">
+                            <div class="breakdown-card">
+                                <div class="breakdown-info">
+                                    <span>Section Completeness</span>
+                                    <strong id="ats-completeness-score">0%</strong>
+                                </div>
+                                <div class="ats-progress-bar"><div class="fill" id="ats-completeness-fill"></div></div>
+                            </div>
+                            <div class="breakdown-card">
+                                <div class="breakdown-info">
+                                    <span>Resume Structure</span>
+                                    <strong id="ats-structure-score">0%</strong>
+                                </div>
+                                <div class="ats-progress-bar"><div class="fill" id="ats-structure-fill"></div></div>
+                            </div>
+                            <div class="breakdown-card">
+                                <div class="breakdown-info">
+                                    <span>Keyword Optimization</span>
+                                    <strong id="ats-keyword-score">0%</strong>
+                                </div>
+                                <div class="ats-progress-bar"><div class="fill" id="ats-keyword-fill"></div></div>
+                            </div>
+                            <div class="breakdown-card">
+                                <div class="breakdown-info">
+                                    <span>Formatting Scan</span>
+                                    <strong id="ats-formatting-score">0%</strong>
+                                </div>
+                                <div class="ats-progress-bar"><div class="fill" id="ats-formatting-fill"></div></div>
+                            </div>
+                            <div class="breakdown-card">
+                                <div class="breakdown-info">
+                                    <span>Readability Level</span>
+                                    <strong id="ats-readability-score">0%</strong>
+                                </div>
+                                <div class="ats-progress-bar"><div class="fill" id="ats-readability-fill"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Match Tab -->
+                <div class="tab-content" id="tab-match">
+                    <div class="job-match-container">
+                        <div class="jd-input-section">
+                            <h4><i class="fa-solid fa-file-contract text-purple"></i> Match with Job Description</h4>
+                            <p class="text-muted mb-2">Paste a job description or drag-and-drop/select a TXT file containing the requirements.</p>
+                            <textarea id="jd-textarea" placeholder="Paste the job description here..." rows="6" class="form-control mb-3"></textarea>
+                            
+                            <div class="jd-file-picker mb-3">
+                                <label for="jd-file-input" class="btn btn-sm btn-outline">
+                                    <i class="fa-solid fa-file-import"></i> Load JD File (.txt)
+                                </label>
+                                <input type="file" id="jd-file-input" accept=".txt" style="display: none;">
+                                <span id="jd-file-status" class="text-muted ml-2" style="font-size: 0.8rem;">No file chosen</span>
+                            </div>
+
+                            <div class="jd-actions">
+                                <button class="btn btn-primary" id="btn-run-match">
+                                    <i class="fa-solid fa-calculator"></i> Calculate Match
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="match-results-section" id="match-results-section" style="display: none;">
+                            <hr class="section-divider">
+                            <div class="match-overview-grid">
+                                <div class="match-percentage-card">
+                                    <h3 id="match-pct-value">0%</h3>
+                                    <p>Resume Match Percentage</p>
+                                </div>
+                                <div class="match-metrics-list">
+                                    <div class="metric-item">
+                                        <span class="metric-name">Skill Match</span>
+                                        <span class="metric-val" id="match-skill-val">0%</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-name">Experience Match</span>
+                                        <span class="metric-val" id="match-experience-val">0%</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-name">Education Match</span>
+                                        <span class="metric-val" id="match-education-val">0%</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-name">Overall Compatibility</span>
+                                        <span class="metric-val" id="match-compatibility-val">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="missing-items-grid mt-4">
+                                <div class="missing-card">
+                                    <h5><i class="fa-solid fa-triangle-exclamation text-danger"></i> Missing Skills</h5>
+                                    <div class="missing-tags" id="missing-skills-tags">
+                                        <!-- Missing skills tags -->
+                                    </div>
+                                </div>
+                                <div class="missing-card">
+                                    <h5><i class="fa-solid fa-tags text-warning"></i> Missing Keywords</h5>
+                                    <div class="missing-tags" id="missing-keywords-tags">
+                                        <!-- Missing keywords tags -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Analysis Tab -->
+                <div class="tab-content" id="tab-ai">
+                    <div class="ai-analysis-container">
+                        <div class="analysis-status-card">
+                            <h4><i class="fa-solid fa-robot text-purple"></i> AI Resume Analysis Report</h4>
+                            <p class="text-muted">A linguistic and structural scan of your resume content.</p>
+                        </div>
+                        <div class="analysis-sections-grid mt-3">
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-table-columns text-purple"></i> Resume Structure & Formatting</h5>
+                                <div class="analysis-box">
+                                    <p><strong>Structure:</strong> <span id="ai-structure-text">--</span></p>
+                                    <p><strong>Formatting:</strong> <span id="ai-formatting-text">--</span></p>
+                                </div>
+                            </div>
+
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-language text-cyan"></i> Tone & Readability</h5>
+                                <div class="analysis-box">
+                                    <p><strong>Professional Tone:</strong> <span id="ai-tone-text">--</span></p>
+                                    <p><strong>Readability Feedback:</strong> <span id="ai-readability-text">--</span></p>
+                                </div>
+                            </div>
+
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-arrows-left-right text-green"></i> Length & Redundancy</h5>
+                                <div class="analysis-box">
+                                    <p><strong>Resume Length:</strong> <span id="ai-length-text">--</span></p>
+                                    <p><strong>Duplicate Content:</strong></p>
+                                    <ul class="analysis-bullets" id="ai-duplicates-list">
+                                        <!-- Duplicate content lines -->
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-spell-check text-warning"></i> Spelling & Grammar Checks</h5>
+                                <div class="analysis-box">
+                                    <p><strong>Spelling Issues:</strong></p>
+                                    <ul class="analysis-bullets" id="ai-spelling-list">
+                                        <!-- Spelling lists -->
+                                    </ul>
+                                    <p class="mt-2"><strong>Grammar Feedback:</strong></p>
+                                    <ul class="analysis-bullets" id="ai-grammar-list">
+                                        <!-- Grammar lists -->
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="analysis-detail-card full-width-card">
+                                <h5><i class="fa-solid fa-bolt-lightning text-danger"></i> Style Improvements</h5>
+                                <div class="analysis-box style-box-split">
+                                    <div>
+                                        <h6 class="text-danger-light"><i class="fa-solid fa-triangle-exclamation"></i> Weak Sentences (Buzzwords / Passive verbs)</h6>
+                                        <p class="small text-muted mb-2">Sentences that lack strong action verbs or contain generic phrases:</p>
+                                        <ul class="analysis-bullets error-bullets" id="ai-weak-sentences-list">
+                                            <!-- Weak sentences list -->
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-danger-light"><i class="fa-solid fa-wave-square"></i> Passive Voice Usage</h6>
+                                        <p class="small text-muted mb-2">Passive verb constructs. Consider rewriting with active action verbs:</p>
+                                        <ul class="analysis-bullets error-bullets" id="ai-passive-voice-list">
+                                            <!-- Passive voice list -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="tab-content" id="tab-json">
                     <pre><code class="json-code" id="raw-json-content">Loading...</code></pre>
                 </div>

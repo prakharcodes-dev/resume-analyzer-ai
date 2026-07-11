@@ -696,6 +696,72 @@ window.viewResumeDetails = async function(id) {
     // 1. Show modal overlay
     modal.classList.add('open');
 
+    // Reset tabs to default (Structured View)
+    const tabs = modal.querySelectorAll('.modal-tab');
+    const tabContents = modal.querySelectorAll('.tab-content');
+    tabs.forEach(t => t.classList.remove('active'));
+    tabContents.forEach(c => c.classList.remove('active'));
+    
+    const defaultTab = modal.querySelector('.modal-tab[data-tab="tab-structured"]');
+    if (defaultTab) defaultTab.classList.add('active');
+    const defaultContent = document.getElementById('tab-structured');
+    if (defaultContent) defaultContent.classList.add('active');
+
+    // Reset Job Description match tab fields
+    const jdTextarea = document.getElementById('jd-textarea');
+    const matchResultsSection = document.getElementById('match-results-section');
+    const jdFileInput = document.getElementById('jd-file-input');
+    const jdFileStatus = document.getElementById('jd-file-status');
+    if (jdTextarea) jdTextarea.value = '';
+    if (matchResultsSection) matchResultsSection.style.display = 'none';
+    if (jdFileStatus) jdFileStatus.textContent = 'No file chosen';
+    if (jdFileInput) jdFileInput.value = '';
+
+    // Handle JD file selection
+    if (jdFileInput) {
+        jdFileInput.onchange = (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                jdFileStatus.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    jdTextarea.value = event.target.result;
+                };
+                reader.readAsText(file);
+            }
+        };
+    }
+
+    // Bind JD Match execution button
+    const btnRunMatch = document.getElementById('btn-run-match');
+    if (btnRunMatch) {
+        btnRunMatch.onclick = async () => {
+            const jdText = jdTextarea.value.trim();
+            if (!jdText) {
+                showNotification('Please paste or load a Job Description first.', 'danger');
+                return;
+            }
+            btnRunMatch.disabled = true;
+            btnRunMatch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Calculating...';
+            try {
+                const res = await fetch(`/api/resumes/${id}/match`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ jobDescription: jdText })
+                });
+                if (!res.ok) throw new Error('Matching failed');
+                const matchData = await res.json();
+                renderMatchTab(matchData);
+            } catch(err) {
+                console.error(err);
+                showNotification('Failed to compute job match.', 'danger');
+            } finally {
+                btnRunMatch.disabled = false;
+                btnRunMatch.innerHTML = '<i class="fa-solid fa-calculator"></i> Calculate Match';
+            }
+        };
+    }
+
     // 2. Fetch details from server
     try {
         const response = await fetch(`/api/resumes/${id}`);
@@ -808,15 +874,24 @@ window.viewResumeDetails = async function(id) {
             repProjContainer.innerHTML = '<div class="text-muted">No projects parsed</div>';
         }
 
+        // Fetch ATS Report Metrics
+        fetch(`/api/resumes/${id}/ats`)
+            .then(res => res.json())
+            .then(atsData => renderAtsTab(atsData))
+            .catch(err => console.error("Error loading ATS data:", err));
+
+        // Fetch AI Analysis Report Findings
+        fetch(`/api/resumes/${id}/ai-analysis`)
+            .then(res => res.json())
+            .then(aiData => renderAiTab(aiData))
+            .catch(err => console.error("Error loading AI analysis:", err));
+
     } catch (err) {
         console.error(err);
         jsonEl.textContent = 'Error loading file report details.';
     }
 
     // Bind tab switching
-    const tabs = modal.querySelectorAll('.modal-tab');
-    const tabContents = modal.querySelectorAll('.tab-content');
-    
     tabs.forEach(tab => {
         tab.onclick = () => {
             tabs.forEach(t => t.classList.remove('active'));
@@ -835,6 +910,156 @@ window.viewResumeDetails = async function(id) {
     const closeModal = () => modal.classList.remove('open');
     closeBtn.onclick = closeModal;
     closeBtnFooter.onclick = closeModal;
+}
+
+// ----------------------------------------------------
+// TAB RENDERING ENGINE HELPERS
+// ----------------------------------------------------
+function renderAtsTab(data) {
+    const scoreVal = data.atsScore || 0;
+    const scoreValEl = document.getElementById('ats-score-value');
+    if (scoreValEl) scoreValEl.textContent = `${scoreVal}%`;
+    
+    const ring = document.getElementById('ats-score-ring');
+    if (ring) {
+        ring.style.background = `conic-gradient(var(--primary) ${scoreVal * 3.6}deg, rgba(255, 255, 255, 0.05) 0deg)`;
+    }
+
+    const badge = document.getElementById('ats-compatibility-badge');
+    if (badge) {
+        badge.textContent = data.compatibility || 'UNKNOWN';
+        badge.className = 'badge'; // Reset classes
+        if (data.compatibility === 'EXCELLENT') {
+            badge.classList.add('badge-success');
+        } else if (data.compatibility === 'GOOD') {
+            badge.classList.add('badge-info');
+        } else if (data.compatibility === 'NEEDS_IMPROVEMENT') {
+            badge.classList.add('badge-warning');
+        } else {
+            badge.classList.add('badge-danger');
+        }
+    }
+
+    const scores = {
+        'completeness': data.sectionCompletenessScore,
+        'structure': data.structureScore,
+        'keyword': data.keywordScore,
+        'formatting': data.formattingScore,
+        'readability': data.readabilityScore
+    };
+
+    for (const [key, val] of Object.entries(scores)) {
+        const textEl = document.getElementById(`ats-${key}-score`);
+        const fillEl = document.getElementById(`ats-${key}-fill`);
+        if (textEl && fillEl) {
+            textEl.textContent = `${val}%`;
+            fillEl.style.width = `${val}%`;
+            if (val >= 80) {
+                fillEl.style.backgroundColor = 'var(--success)';
+            } else if (val >= 60) {
+                fillEl.style.backgroundColor = 'var(--secondary)';
+            } else if (val >= 45) {
+                fillEl.style.backgroundColor = 'var(--warning)';
+            } else {
+                fillEl.style.backgroundColor = 'var(--danger)';
+            }
+        }
+    }
+}
+
+function renderMatchTab(data) {
+    const resultsSection = document.getElementById('match-results-section');
+    if (resultsSection) resultsSection.style.display = 'block';
+
+    const pct = data.resumeMatchPercentage || 0;
+    const pctValEl = document.getElementById('match-pct-value');
+    if (pctValEl) pctValEl.textContent = `${pct}%`;
+    
+    const pctCard = document.querySelector('.match-percentage-card');
+    if (pctCard) {
+        pctCard.style.borderColor = pct >= 80 ? 'var(--success)' : pct >= 55 ? 'var(--secondary)' : 'var(--danger)';
+    }
+
+    const skillVal = document.getElementById('match-skill-val');
+    if (skillVal) skillVal.textContent = `${data.skillMatch}%`;
+    const expVal = document.getElementById('match-experience-val');
+    if (expVal) expVal.textContent = `${data.experienceMatch}%`;
+    const eduVal = document.getElementById('match-education-val');
+    if (eduVal) eduVal.textContent = `${data.educationMatch}%`;
+    const compVal = document.getElementById('match-compatibility-val');
+    if (compVal) compVal.textContent = `${data.overallCompatibilityScore}%`;
+
+    const skillsContainer = document.getElementById('missing-skills-tags');
+    if (skillsContainer) {
+        skillsContainer.innerHTML = '';
+        if (data.missingSkills && data.missingSkills.length > 0) {
+            data.missingSkills.forEach(skill => {
+                const span = document.createElement('span');
+                span.className = 'missing-tag skill-missing';
+                span.textContent = skill;
+                skillsContainer.appendChild(span);
+            });
+        } else {
+            skillsContainer.innerHTML = '<span class="text-muted small">No missing skills detected! Perfect match.</span>';
+        }
+    }
+
+    const kwContainer = document.getElementById('missing-keywords-tags');
+    if (kwContainer) {
+        kwContainer.innerHTML = '';
+        if (data.missingKeywords && data.missingKeywords.length > 0) {
+            data.missingKeywords.forEach(kw => {
+                const span = document.createElement('span');
+                span.className = 'missing-tag kw-missing';
+                span.textContent = kw;
+                kwContainer.appendChild(span);
+            });
+        } else {
+            kwContainer.innerHTML = '<span class="text-muted small">No missing keywords detected.</span>';
+        }
+    }
+}
+
+function renderAiTab(data) {
+    const structEl = document.getElementById('ai-structure-text');
+    if (structEl) structEl.textContent = data.structure || '--';
+    const formEl = document.getElementById('ai-formatting-text');
+    if (formEl) formEl.textContent = data.formatting || '--';
+    const toneEl = document.getElementById('ai-tone-text');
+    if (toneEl) toneEl.textContent = data.professionalTone || '--';
+    const readEl = document.getElementById('ai-readability-text');
+    if (readEl) readEl.textContent = data.readability || '--';
+    const lenEl = document.getElementById('ai-length-text');
+    if (lenEl) lenEl.textContent = data.length || '--';
+
+    const renderList = (elId, list, fallbackText = "None detected.") => {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        el.innerHTML = '';
+        const isNotOk = list && list.length > 0 && 
+                        list[0] !== "No duplicate sections found." && 
+                        list[0] !== "No major spelling errors detected." && 
+                        list[0] !== "Grammar looks solid.";
+        if (isNotOk) {
+            list.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                el.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.className = 'text-muted italic';
+            li.style.listStyleType = 'none';
+            li.textContent = list && list.length > 0 ? list[0] : fallbackText;
+            el.appendChild(li);
+        }
+    };
+
+    renderList('ai-duplicates-list', data.duplicateContent, "No duplicate content detected.");
+    renderList('ai-spelling-list', data.spelling, "No spelling issues found.");
+    renderList('ai-grammar-list', data.grammar, "No grammar issues found.");
+    renderList('ai-weak-sentences-list', data.weakSentences, "No weak sentences detected.");
+    renderList('ai-passive-voice-list', data.passiveVoice, "No passive voice usage detected.");
 }
 
 // ----------------------------------------------------
