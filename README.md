@@ -62,7 +62,7 @@ The system processes PDF and DOCX resumes, identifies contact information, skill
 
 ---
 
-# Current Features (Phase 1 & Phase 2)
+# Current Features 
 
 ### Phase 1 (Core Infrastructure)
 - Resume Upload (PDF & DOCX)
@@ -75,9 +75,20 @@ The system processes PDF and DOCX resumes, identifies contact information, skill
 
 ### Phase 2 (Analysis & Audit Engines)
 - **ATS Checker**: Local rule-based score calculation and compatibility categorization.
+
 - **Job Description Matcher**: Text matcher, `.txt` file reader, and comparative metrics calculator.
+
 - **AI Resume Auditor**: Sentence structure parser, typo check, passive voice finder, and style optimizer.
+
 - **Frontend Tab System**: Integrated ATS score rings, match indicators, JD file selector, and grammar check cards directly into a 5-tab Report Drawer Modal.
+
+### Phase 3 (AI Enhancement & User Experience Improvements)
+
+- **Theme Support**: Added Light and Dark mode with theme switching functionality.
+
+- **AI Resume Suggestions**: AI-powered recommendations for improving summary, experience, projects, skills, education, certifications, achievements, keywords, and industry-specific content.
+
+- **Advanced Skills Analysis**: AI-based skill evaluation with skill distribution, missing skills detection, recommended skills, and skill strength visualization.
 
 ---
 

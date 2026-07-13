@@ -565,4 +565,270 @@ public class ResumeAnalysisService {
         }
         return count;
     }
+
+    /**
+     * Generate resume improvement suggestions across various sections.
+     */
+    public String getResumeSuggestions(UploadedResume resume, String rawText) {
+        ObjectNode rootNode = objectMapper.createObjectNode();
+        String lowerText = rawText.toLowerCase();
+
+        // 1. Resume Summary Heuristic
+        String summarySuggestion = "Add a 3-4 sentence professional summary at the top of your resume. Highlight your core tech stack, years of experience, and the key value you bring to a team.";
+        if (lowerText.contains("summary") || lowerText.contains("profile") || lowerText.contains("about me") || lowerText.contains("objective")) {
+            summarySuggestion = "Ensure your summary avoids generic clichés like 'hardworking individual'. Instead, make it impact-oriented by mentioning your primary technologies and a key engineering achievement.";
+        }
+
+        // 2. Experience Section Heuristic
+        String expSuggestion = "Structure your work experience with clean bullet points. Start each bullet point with a strong action verb (e.g., 'Engineered', 'Optimized') and focus on the business impact of your work.";
+        if (lowerText.contains("experience") || lowerText.contains("history")) {
+            expSuggestion = "Use the STAR method (Situation, Task, Action, Result) for bullet points. Quantify your metrics where possible (e.g., 'Reduced API latency by 20%' or 'Scaled database queries to support 10k users').";
+        }
+
+        // 3. Projects Heuristic
+        String projSuggestion = "Ensure each project lists the problem solved, the specific tech stack utilized, and your individual contribution. Highlight challenges overcome during implementation.";
+
+        // 4. Skills Section Heuristic
+        String skillsSuggestion = "Group your technical skills into clear sub-categories (e.g., Programming Languages, Frameworks, Databases, Cloud & DevOps) to help ATS scanners index your skills efficiently.";
+        if (lowerText.contains("skills") || lowerText.contains("competencies")) {
+            skillsSuggestion = "Avoid listing tools or technologies you only have a passing familiarity with. Keep the list current and prioritized according to the job profile you are targetting.";
+        }
+
+        // 5. Education Section Heuristic
+        String eduSuggestion = "List your degree, major, university name, and graduation date. If your GPA is 3.5 or higher, display it. For recent graduates, list relevant coursework or key academic awards.";
+
+        // 6. Certifications Heuristic
+        String certSuggestion = "Incorporate industry-standard certifications (e.g. AWS Certified Developer, Certified Kubernetes Administrator, Oracle Certified Java Professional) to validate your capabilities.";
+        if (lowerText.contains("certifications") || lowerText.contains("certificate")) {
+            certSuggestion = "Verify that all listed certifications are up-to-date and include the issuing body and year of completion.";
+        }
+
+        // 7. Achievements Heuristic
+        String achSuggestion = "Create a dedicated Achievements section to highlight promotions, hackathon wins, open-source contributions, or key organizational recognition.";
+
+        // 8. Action Verbs Heuristic
+        String verbSuggestion = "Scan your experience bullets to replace weak verbs (e.g., 'was responsible for', 'assisted in', 'handled') with high-impact action verbs (e.g., 'Spearheaded', 'Architected', 'Automated').";
+
+        // 9. Keyword Optimization Heuristic
+        String kwSuggestion = "Analyze target job descriptions and integrate missing keywords. Focus on core architectural keywords like 'Microservices', 'RESTful APIs', 'CI/CD Pipelines', and 'Agile Methods'.";
+
+        // 10. Industry-Specific Improvements Heuristic
+        String indSuggestion = "For Software Engineering roles, emphasize system design, API design patterns, database optimization, CI/CD pipeline automation, and unit test coverage.";
+
+        rootNode.put("summary", summarySuggestion);
+        rootNode.put("experience", expSuggestion);
+        rootNode.put("projects", projSuggestion);
+        rootNode.put("skills", skillsSuggestion);
+        rootNode.put("education", eduSuggestion);
+        rootNode.put("certifications", certSuggestion);
+        rootNode.put("achievements", achSuggestion);
+        rootNode.put("actionVerbs", verbSuggestion);
+        rootNode.put("keywordOptimization", kwSuggestion);
+        rootNode.put("industryImprovements", indSuggestion);
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    /**
+     * Perform Skills Analysis on the resume.
+     */
+    public String getSkillsAnalysis(UploadedResume resume, String rawText) {
+        ObjectNode rootNode = objectMapper.createObjectNode();
+        String lowerText = rawText.toLowerCase();
+
+        // Define keywords for categories
+        List<String> langKeywords = Arrays.asList("java", "python", "javascript", "typescript", "c\\+\\+", "c#", "go", "ruby", "php", "swift", "kotlin", "rust", "bash", "scala", "c");
+        List<String> frameworkKeywords = Arrays.asList("spring boot", "spring", "react", "angular", "vue", "express", "django", "flask", "laravel", "rails", "next\\.js", "hibernate", "node\\.js", "asp\\.net", "jquery", "bootstrap");
+        List<String> dbKeywords = Arrays.asList("mysql", "postgresql", "oracle", "sql server", "mongodb", "redis", "cassandra", "dynamodb", "sqlite", "mariadb", "couchdb");
+        List<String> cloudKeywords = Arrays.asList("aws", "azure", "gcp", "cloud", "serverless", "lambda", "s3", "ec2", "rds", "cloudfront");
+        List<String> devopsKeywords = Arrays.asList("docker", "kubernetes", "jenkins", "gitlab ci", "github actions", "ansible", "terraform", "ci/cd", "vagrant", "circleci");
+        List<String> aimlKeywords = Arrays.asList("machine learning", "deep learning", "tensorflow", "pytorch", "scikit-learn", "artificial intelligence", "nlp", "computer vision", "keras", "pandas", "numpy");
+        List<String> toolKeywords = Arrays.asList("git", "github", "maven", "gradle", "jira", "confluence", "postman", "figma", "visual studio", "intellij", "eclipse", "slack");
+        List<String> softKeywords = Arrays.asList("leadership", "communication", "problem solving", "teamwork", "agile", "scrum", "collaboration", "mentoring", "negotiation", "adaptability");
+
+        // Parse and populate matched list
+        List<String> languages = findMatchedKeywords(lowerText, langKeywords);
+        List<String> frameworks = findMatchedKeywords(lowerText, frameworkKeywords);
+        List<String> databases = findMatchedKeywords(lowerText, dbKeywords);
+        List<String> cloud = findMatchedKeywords(lowerText, cloudKeywords);
+        List<String> devops = findMatchedKeywords(lowerText, devopsKeywords);
+        List<String> aiml = findMatchedKeywords(lowerText, aimlKeywords);
+        List<String> tools = findMatchedKeywords(lowerText, toolKeywords);
+        List<String> softSkills = findMatchedKeywords(lowerText, softKeywords);
+
+        // Categories object
+        ObjectNode categoriesNode = objectMapper.createObjectNode();
+        categoriesNode.set("languages", objectMapper.valueToTree(languages));
+        categoriesNode.set("frameworks", objectMapper.valueToTree(frameworks));
+        categoriesNode.set("databases", objectMapper.valueToTree(databases));
+        categoriesNode.set("cloud", objectMapper.valueToTree(cloud));
+        categoriesNode.set("devops", objectMapper.valueToTree(devops));
+        categoriesNode.set("aiml", objectMapper.valueToTree(aiml));
+        categoriesNode.set("tools", objectMapper.valueToTree(tools));
+        categoriesNode.set("softSkills", objectMapper.valueToTree(softSkills));
+
+        // Distribution node
+        ObjectNode distNode = objectMapper.createObjectNode();
+        distNode.put("Languages", languages.size());
+        distNode.put("Frameworks", frameworks.size());
+        distNode.put("Databases", databases.size());
+        distNode.put("Cloud", cloud.size());
+        distNode.put("DevOps", devops.size());
+        distNode.put("AI/ML", aiml.size());
+        distNode.put("Tools", tools.size());
+        distNode.put("Soft Skills", softSkills.size());
+
+        // Strength graph node
+        ObjectNode strengthNode = objectMapper.createObjectNode();
+        strengthNode.put("Languages", calculateStrengthValue(languages.size()));
+        strengthNode.put("Frameworks", calculateStrengthValue(frameworks.size()));
+        strengthNode.put("Databases", calculateStrengthValue(databases.size()));
+        strengthNode.put("Cloud", calculateStrengthValue(cloud.size()));
+        strengthNode.put("DevOps", calculateStrengthValue(devops.size()));
+        strengthNode.put("AI/ML", calculateStrengthValue(aiml.size()));
+        strengthNode.put("Tools", calculateStrengthValue(tools.size()));
+        strengthNode.put("Soft Skills", calculateStrengthValue(softSkills.size()));
+
+        // Missing & Recommended Skills
+        List<String> missingSkills = new ArrayList<>();
+        List<String> recommendedSkills = new ArrayList<>();
+
+        if (languages.contains("Java") && !frameworks.contains("Spring Boot")) {
+            missingSkills.add("Spring Boot (Enterprise Java)");
+            recommendedSkills.add("Spring Boot & Spring Framework");
+        }
+        if (languages.contains("Python") && aiml.isEmpty()) {
+            recommendedSkills.add("Pandas / NumPy / Scikit-Learn (AI/ML)");
+        }
+        if (languages.contains("JavaScript") && !frameworks.contains("React")) {
+            missingSkills.add("Modern UI Library (React/Vue)");
+            recommendedSkills.add("React.js Framework");
+        }
+        if (cloud.isEmpty()) {
+            missingSkills.add("AWS / Azure / GCP Cloud Platforms");
+            recommendedSkills.add("AWS Certified Developer Foundations");
+        }
+        if (devops.isEmpty()) {
+            missingSkills.add("Containerization (Docker)");
+            recommendedSkills.add("Docker & CI/CD Pipelines (GitHub Actions/Jenkins)");
+        }
+        if (databases.isEmpty()) {
+            missingSkills.add("Relational Databases (SQL)");
+            recommendedSkills.add("PostgreSQL or MySQL Basics");
+        }
+
+        // Fill generic recommendations if lists are empty
+        if (missingSkills.isEmpty()) {
+            missingSkills.add("Advanced System Design Patterns");
+            missingSkills.add("Infrastructure as Code (Terraform)");
+        }
+        if (recommendedSkills.isEmpty()) {
+            recommendedSkills.add("Kubernetes Orchestration");
+            recommendedSkills.add("GraphQL API Implementations");
+        }
+
+        rootNode.set("categories", categoriesNode);
+        rootNode.set("distribution", distNode);
+        rootNode.set("strength", strengthNode);
+        rootNode.set("missingSkills", objectMapper.valueToTree(missingSkills));
+        rootNode.set("recommendedSkills", objectMapper.valueToTree(recommendedSkills));
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    private List<String> findMatchedKeywords(String text, List<String> keywords) {
+        List<String> matched = new ArrayList<>();
+        for (String kw : keywords) {
+            Pattern p = Pattern.compile("\\b" + kw + "\\b");
+            if (p.matcher(text).find()) {
+                String clean = kw.replace("\\+", "+").replace("\\.", ".");
+                if (clean.equals("java")) clean = "Java";
+                else if (clean.equals("python")) clean = "Python";
+                else if (clean.equals("javascript")) clean = "JavaScript";
+                else if (clean.equals("typescript")) clean = "TypeScript";
+                else if (clean.equals("c++")) clean = "C++";
+                else if (clean.equals("c#")) clean = "C#";
+                else if (clean.equals("go")) clean = "Go";
+                else if (clean.equals("ruby")) clean = "Ruby";
+                else if (clean.equals("php")) clean = "PHP";
+                else if (clean.equals("swift")) clean = "Swift";
+                else if (clean.equals("kotlin")) clean = "Kotlin";
+                else if (clean.equals("rust")) clean = "Rust";
+                else if (clean.equals("bash")) clean = "Bash";
+                else if (clean.equals("spring boot")) clean = "Spring Boot";
+                else if (clean.equals("spring")) clean = "Spring";
+                else if (clean.equals("react")) clean = "React";
+                else if (clean.equals("angular")) clean = "Angular";
+                else if (clean.equals("vue")) clean = "Vue";
+                else if (clean.equals("express")) clean = "Express";
+                else if (clean.equals("django")) clean = "Django";
+                else if (clean.equals("flask")) clean = "Flask";
+                else if (clean.equals("laravel")) clean = "Laravel";
+                else if (clean.equals("rails")) clean = "Rails";
+                else if (clean.equals("next.js")) clean = "Next.js";
+                else if (clean.equals("hibernate")) clean = "Hibernate";
+                else if (clean.equals("node.js")) clean = "Node.js";
+                else if (clean.equals("mysql")) clean = "MySQL";
+                else if (clean.equals("postgresql")) clean = "PostgreSQL";
+                else if (clean.equals("oracle")) clean = "Oracle";
+                else if (clean.equals("sql server")) clean = "SQL Server";
+                else if (clean.equals("mongodb")) clean = "MongoDB";
+                else if (clean.equals("redis")) clean = "Redis";
+                else if (clean.equals("cassandra")) clean = "Cassandra";
+                else if (clean.equals("dynamodb")) clean = "DynamoDB";
+                else if (clean.equals("sqlite")) clean = "SQLite";
+                else if (clean.equals("aws")) clean = "AWS";
+                else if (clean.equals("azure")) clean = "Azure";
+                else if (clean.equals("gcp")) clean = "GCP";
+                else if (clean.equals("cloud")) clean = "Cloud Computing";
+                else if (clean.equals("docker")) clean = "Docker";
+                else if (clean.equals("kubernetes")) clean = "Kubernetes";
+                else if (clean.equals("jenkins")) clean = "Jenkins";
+                else if (clean.equals("gitlab ci")) clean = "GitLab CI";
+                else if (clean.equals("github actions")) clean = "GitHub Actions";
+                else if (clean.equals("ansible")) clean = "Ansible";
+                else if (clean.equals("terraform")) clean = "Terraform";
+                else if (clean.equals("ci/cd")) clean = "CI/CD";
+                else if (clean.equals("machine learning")) clean = "Machine Learning";
+                else if (clean.equals("deep learning")) clean = "Deep Learning";
+                else if (clean.equals("tensorflow")) clean = "TensorFlow";
+                else if (clean.equals("pytorch")) clean = "PyTorch";
+                else if (clean.equals("scikit-learn")) clean = "Scikit-Learn";
+                else if (clean.equals("git")) clean = "Git";
+                else if (clean.equals("github")) clean = "GitHub";
+                else if (clean.equals("maven")) clean = "Maven";
+                else if (clean.equals("gradle")) clean = "Gradle";
+                else if (clean.equals("postman")) clean = "Postman";
+                else if (clean.equals("jira")) clean = "Jira";
+                else if (clean.equals("leadership")) clean = "Leadership";
+                else if (clean.equals("communication")) clean = "Communication";
+                else if (clean.equals("problem solving")) clean = "Problem Solving";
+                else if (clean.equals("teamwork")) clean = "Teamwork";
+                else if (clean.equals("agile")) clean = "Agile";
+                else if (clean.equals("scrum")) clean = "Scrum";
+                else if (clean.equals("collaboration")) clean = "Collaboration";
+                else {
+                    clean = clean.substring(0, 1).toUpperCase() + clean.substring(1);
+                }
+                matched.add(clean);
+            }
+        }
+        return matched;
+    }
+
+    private int calculateStrengthValue(int count) {
+        if (count >= 4) return 95;
+        if (count == 3) return 85;
+        if (count == 2) return 70;
+        if (count == 1) return 55;
+        return 20;
+    }
 }

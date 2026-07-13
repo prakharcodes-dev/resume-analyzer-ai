@@ -22,6 +22,7 @@ const state = {
 // INITIALIZATION
 // ----------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+    initThemeToggle();
     initRouting();
     initUpload();
     initProfileActions();
@@ -886,6 +887,18 @@ window.viewResumeDetails = async function(id) {
             .then(aiData => renderAiTab(aiData))
             .catch(err => console.error("Error loading AI analysis:", err));
 
+        // Fetch AI Suggestions (Feature 8)
+        fetch(`/api/resumes/${id}/suggestions`)
+            .then(res => res.json())
+            .then(sugData => renderSuggestionsTab(sugData))
+            .catch(err => console.error("Error loading suggestions:", err));
+
+        // Fetch Skills Analysis (Feature 9)
+        fetch(`/api/resumes/${id}/skills-analysis`)
+            .then(res => res.json())
+            .then(skillsData => renderSkillsAnalysisTab(skillsData))
+            .catch(err => console.error("Error loading skills analysis:", err));
+
     } catch (err) {
         console.error(err);
         jsonEl.textContent = 'Error loading file report details.';
@@ -1170,3 +1183,166 @@ style.textContent = `
 }
 `;
 document.head.appendChild(style);
+
+// ----------------------------------------------------
+// THEME TOGGLE ENGINE
+// ----------------------------------------------------
+function initThemeToggle() {
+    const btnToggle = document.getElementById('btn-theme-toggle');
+    if (!btnToggle) return;
+
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    if (currentTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        btnToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
+    } else {
+        document.body.classList.remove('dark-mode');
+        btnToggle.innerHTML = '<i class="fa-solid fa-moon"></i>';
+    }
+
+    btnToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        btnToggle.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    });
+}
+
+// ----------------------------------------------------
+// ADVANCED FEATURES RENDERERS
+// ----------------------------------------------------
+function renderSuggestionsTab(data) {
+    const fields = [
+        'summary', 'experience', 'projects', 'skills', 'education', 
+        'certifications', 'achievements', 'action-verbs', 
+        'keyword-optimization', 'industry-improvements'
+    ];
+    fields.forEach(f => {
+        const propName = f.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+        const el = document.getElementById(`sug-${f}`);
+        if (el) {
+            el.textContent = data[propName] || 'No suggestions available.';
+        }
+    });
+}
+
+function renderSkillsAnalysisTab(data) {
+    // 1. Skill Distribution (e.g. bar chart)
+    const distContainer = document.getElementById('skills-dist-container');
+    if (distContainer) {
+        distContainer.innerHTML = '';
+        const dist = data.distribution || {};
+        for (const [key, val] of Object.entries(dist)) {
+            const row = document.createElement('div');
+            row.className = 'breakdown-card';
+            row.style.padding = '0.75rem';
+            row.innerHTML = `
+                <div class="breakdown-info">
+                    <span>${escapeHtml(key)}</span>
+                    <strong>${val} skill(s)</strong>
+                </div>
+                <div class="ats-progress-bar">
+                    <div class="fill" style="width: ${Math.min(val * 20, 100)}%; background-color: var(--secondary);"></div>
+                </div>
+            `;
+            distContainer.appendChild(row);
+        }
+    }
+
+    // 2. Skill Strength Graph
+    const strengthContainer = document.getElementById('skills-strength-container');
+    if (strengthContainer) {
+        strengthContainer.innerHTML = '';
+        const strength = data.strength || {};
+        for (const [key, val] of Object.entries(strength)) {
+            const row = document.createElement('div');
+            row.className = 'breakdown-card';
+            row.style.padding = '0.75rem';
+            
+            const color = val >= 80 ? 'var(--success)' : val >= 60 ? 'var(--secondary)' : val >= 45 ? 'var(--warning)' : 'var(--danger)';
+            row.innerHTML = `
+                <div class="breakdown-info">
+                    <span>${escapeHtml(key)} Strength</span>
+                    <strong>${val}%</strong>
+                </div>
+                <div class="ats-progress-bar">
+                    <div class="fill" style="width: ${val}%; background-color: ${color};"></div>
+                </div>
+            `;
+            strengthContainer.appendChild(row);
+        }
+    }
+
+    // 3. Categorized skills tags list
+    const categorizedContainer = document.getElementById('categorized-skills-container');
+    if (categorizedContainer) {
+        categorizedContainer.innerHTML = '';
+        const cats = data.categories || {};
+        const catLabels = {
+            'languages': 'Programming Languages',
+            'frameworks': 'Frameworks & Libraries',
+            'databases': 'Databases',
+            'cloud': 'Cloud Technologies',
+            'devops': 'DevOps & CI/CD',
+            'aiml': 'AI/ML Skills',
+            'tools': 'Developer Tools',
+            'softSkills': 'Soft Skills & Methods'
+        };
+
+        for (const [key, label] of Object.entries(catLabels)) {
+            const list = cats[key] || [];
+            if (list.length === 0) continue;
+
+            const section = document.createElement('div');
+            section.className = 'skill-category-item';
+            
+            let tagsHtml = '';
+            list.forEach(skill => {
+                tagsHtml += `<span class="report-skill">${escapeHtml(skill)}</span>`;
+            });
+
+            section.innerHTML = `
+                <h6>${escapeHtml(label)}</h6>
+                <div class="skill-category-tags">
+                    ${tagsHtml}
+                </div>
+            `;
+            categorizedContainer.appendChild(section);
+        }
+        if (categorizedContainer.children.length === 0) {
+            categorizedContainer.innerHTML = '<p class="text-muted small">No categorized skills found.</p>';
+        }
+    }
+
+    // 4. Missing Skills Gaps tags
+    const missingContainer = document.getElementById('skills-missing-container');
+    if (missingContainer) {
+        missingContainer.innerHTML = '';
+        if (data.missingSkills && data.missingSkills.length > 0) {
+            data.missingSkills.forEach(skill => {
+                const span = document.createElement('span');
+                span.className = 'missing-tag skill-missing';
+                span.textContent = skill;
+                missingContainer.appendChild(span);
+            });
+        } else {
+            missingContainer.innerHTML = '<span class="text-muted small">No major skill gaps identified!</span>';
+        }
+    }
+
+    // 5. Recommended Skills tags
+    const recContainer = document.getElementById('skills-recommended-container');
+    if (recContainer) {
+        recContainer.innerHTML = '';
+        if (data.recommendedSkills && data.recommendedSkills.length > 0) {
+            data.recommendedSkills.forEach(skill => {
+                const span = document.createElement('span');
+                span.className = 'missing-tag kw-missing';
+                span.textContent = skill;
+                recContainer.appendChild(span);
+            });
+        } else {
+            recContainer.innerHTML = '<span class="text-muted small">Profile is well optimized.</span>';
+        }
+    }
+}

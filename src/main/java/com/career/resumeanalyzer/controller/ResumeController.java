@@ -199,6 +199,40 @@ public class ResumeController {
         }
     }
 
+    @GetMapping("/{id}/suggestions")
+    public ResponseEntity<?> getResumeSuggestions(@PathVariable("id") Long id) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String report = resumeAnalysisService.getResumeSuggestions(resume, rawText);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @GetMapping("/{id}/skills-analysis")
+    public ResponseEntity<?> getSkillsAnalysis(@PathVariable("id") Long id) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String report = resumeAnalysisService.getSkillsAnalysis(resume, rawText);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
+    }
+
     @PostMapping("/{id}/match")
     public ResponseEntity<?> matchJobDescription(@PathVariable("id") Long id, @RequestBody JsonNode requestBody) {
         Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);

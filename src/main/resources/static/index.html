@@ -56,6 +56,9 @@
                     <input type="text" placeholder="Search resumes, skills, or education..." disabled>
                 </div>
                 <div class="nav-actions">
+                    <button class="theme-toggle-btn" id="btn-theme-toggle" title="Toggle Light/Dark Mode">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
                     <div class="mode-badge"><i class="fa-solid fa-bolt"></i> Offline Mode</div>
                     <div class="profile-preview">
                         <span id="user-display-name">Guest User</span>
@@ -307,6 +310,8 @@
                     <button class="modal-tab" data-tab="tab-ats">ATS Checker</button>
                     <button class="modal-tab" data-tab="tab-match">Job Match</button>
                     <button class="modal-tab" data-tab="tab-ai">AI Analysis</button>
+                    <button class="modal-tab" data-tab="tab-suggestions">AI Suggestions</button>
+                    <button class="modal-tab" data-tab="tab-skills-analysis">Skills Analysis</button>
                     <button class="modal-tab" data-tab="tab-json">Raw JSON</button>
                 </div>
                 <div class="tab-content active" id="tab-structured">
@@ -543,6 +548,106 @@
                                         <ul class="analysis-bullets error-bullets" id="ai-passive-voice-list">
                                             <!-- Passive voice list -->
                                         </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Suggestions Tab -->
+                <div class="tab-content" id="tab-suggestions">
+                    <div class="ai-suggestions-container">
+                        <div class="analysis-status-card">
+                            <h4><i class="fa-solid fa-lightbulb text-warning"></i> AI Resume Optimization Suggestions</h4>
+                            <p class="text-muted">Actionable suggestions to improve each section of your resume for recruiters and ATS systems.</p>
+                        </div>
+                        <div class="suggestions-grid mt-3">
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-address-card text-purple"></i> Resume Summary</h5>
+                                <p id="sug-summary">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-briefcase text-cyan"></i> Experience Section</h5>
+                                <p id="sug-experience">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-diagram-project text-green"></i> Projects</h5>
+                                <p id="sug-projects">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-code text-warning"></i> Skills Section</h5>
+                                <p id="sug-skills">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-graduation-cap text-purple"></i> Education Section</h5>
+                                <p id="sug-education">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-certificate text-cyan"></i> Certifications</h5>
+                                <p id="sug-certifications">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-trophy text-green"></i> Achievements</h5>
+                                <p id="sug-achievements">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-bolt-lightning text-danger"></i> Action Verbs</h5>
+                                <p id="sug-action-verbs">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-magnifying-glass text-warning"></i> Keyword Optimization</h5>
+                                <p id="sug-keyword-optimization">Loading...</p>
+                            </div>
+                            <div class="suggestion-card">
+                                <h5><i class="fa-solid fa-industry text-purple"></i> Industry Improvements</h5>
+                                <p id="sug-industry-improvements">Loading...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Analysis Tab -->
+                <div class="tab-content" id="tab-skills-analysis">
+                    <div class="skills-analysis-container">
+                        <div class="analysis-status-card">
+                            <h4><i class="fa-solid fa-chart-pie text-cyan"></i> Advanced Skills & Strength Analysis</h4>
+                            <p class="text-muted">A detailed audit of technical skills, categorizations, recommended gaps, and strength levels.</p>
+                        </div>
+                        <div class="skills-split-grid mt-3">
+                            <!-- Left: Skill strength and distribution -->
+                            <div class="skills-analysis-left">
+                                <div class="analysis-detail-card">
+                                    <h5><i class="fa-solid fa-chart-column text-purple"></i> Skill Distribution</h5>
+                                    <div class="distribution-bars-list" id="skills-dist-container">
+                                        <!-- Dynamic distribution progress bars -->
+                                    </div>
+                                </div>
+                                <div class="analysis-detail-card mt-3">
+                                    <h5><i class="fa-solid fa-gauge-high text-cyan"></i> Skill Strength Graph</h5>
+                                    <div class="strength-bars-list" id="skills-strength-container">
+                                        <!-- Dynamic strength graph bars -->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Right: Categorized skills lists, missing & recommended -->
+                            <div class="skills-analysis-right">
+                                <div class="analysis-detail-card">
+                                    <h5><i class="fa-solid fa-layer-group text-green"></i> Detected Skills by Category</h5>
+                                    <div class="categorized-skills-box" id="categorized-skills-container">
+                                        <!-- Dynamic categories like programming languages, frameworks, etc. -->
+                                    </div>
+                                </div>
+                                <div class="analysis-detail-card mt-3">
+                                    <h5><i class="fa-solid fa-circle-xmark text-danger"></i> Missing Skills (Suggested Gaps)</h5>
+                                    <div class="missing-tags" id="skills-missing-container">
+                                        <!-- Missing skills tags -->
+                                    </div>
+                                </div>
+                                <div class="analysis-detail-card mt-3">
+                                    <h5><i class="fa-solid fa-star text-warning"></i> Recommended Next Skills</h5>
+                                    <div class="missing-tags" id="skills-recommended-container">
+                                        <!-- Recommended skills tags -->
                                     </div>
                                 </div>
                             </div>

@@ -1664,6 +1664,205 @@ body {
 .mb-2 { margin-bottom: 0.5rem; }
 .mb-3 { margin-bottom: 0.75rem; }
 
+/* ----------------------------------------------------
+   THEME TOGGLE SYSTEM (DARK MODE)
+   ---------------------------------------------------- */
+.theme-toggle-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.theme-toggle-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background-color: var(--bg-card-hover);
+}
+
+body.dark-mode {
+    --bg-darker: #0d0b21;      /* Deep obsidian dark */
+    --bg-dark: #050410;        /* Space pitch black */
+    --bg-card: #12102e;        /* Dark blue/indigo card */
+    --bg-card-hover: #19173f;  /* Lighter card hover */
+    
+    --text-main: #f3f4f6;      /* Bright gray */
+    --text-muted: #9ca3af;     /* Muted gray */
+    --border-color: #24214d;   /* Dark indigo border */
+    
+    --primary: #6366f1;        /* Slightly lighter indigo for dark contrast */
+    --secondary: #38bdf8;      /* Lighter sky blue */
+}
+
+body.dark-mode input, 
+body.dark-mode textarea {
+    background-color: #0b091f;
+    color: #f3f4f6;
+}
+
+body.dark-mode .recent-item, 
+body.dark-mode .profile-card-item, 
+body.dark-mode .report-item,
+body.dark-mode .suggestion-card,
+body.dark-mode .breakdown-card,
+body.dark-mode .analysis-detail-card,
+body.dark-mode .missing-card,
+body.dark-mode .match-percentage-card,
+body.dark-mode .metric-item {
+    background-color: #12102e;
+}
+
+body.dark-mode .welcome-banner,
+body.dark-mode .ats-score-overview,
+body.dark-mode .match-overview-grid,
+body.dark-mode .analysis-status-card {
+    background-color: #0d0b21;
+}
+
+body.dark-mode .user-status-card,
+body.dark-mode .drag-drop-zone,
+body.dark-mode .upload-progress-container {
+    background-color: #0b091f;
+}
+
+body.dark-mode .nav-item:hover {
+    background-color: #1c1945;
+}
+
+body.dark-mode .nav-item.active {
+    background-color: #1e1b4b;
+    color: #818cf8;
+}
+
+body.dark-mode .nav-item.active i {
+    color: #818cf8;
+}
+
+body.dark-mode .json-code {
+    background-color: #0b091f;
+    color: #34d399;
+}
+
+body.dark-mode .report-skill {
+    background-color: #1a183d;
+}
+
+/* ----------------------------------------------------
+   AI SUGGESTIONS TAB LAYOUT
+   ---------------------------------------------------- */
+.ai-suggestions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 0.5rem;
+}
+
+.suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.suggestion-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 1.2rem;
+    background: var(--bg-card);
+    transition: var(--transition);
+}
+
+.suggestion-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.suggestion-card h5 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.suggestion-card p {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+}
+
+/* ----------------------------------------------------
+   SKILLS ANALYSIS TAB LAYOUT
+   ---------------------------------------------------- */
+.skills-analysis-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    padding: 0.5rem;
+}
+
+.skills-split-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.skills-analysis-left, 
+.skills-analysis-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.distribution-bars-list, 
+.strength-bars-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.categorized-skills-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.skill-category-item {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.6rem;
+}
+
+.skill-category-item:last-child {
+    border-bottom: none;
+}
+
+.skill-category-item h6 {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.35rem;
+}
+
+.skill-category-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.skill-category-tags .report-skill {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.45rem;
+}
+
 @media(max-width: 1024px) {
     .dashboard-body {
         grid-template-columns: 1fr;
@@ -1683,6 +1882,12 @@ body {
         gap: 1rem;
     }
     .missing-items-grid {
+        grid-template-columns: 1fr;
+    }
+    .suggestions-grid {
+        grid-template-columns: 1fr;
+    }
+    .skills-split-grid {
         grid-template-columns: 1fr;
     }
 }
