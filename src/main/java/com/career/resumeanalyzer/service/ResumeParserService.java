@@ -27,19 +27,23 @@ public class ResumeParserService {
      * Extracts text from the uploaded file based on its content type and parses it into structured JSON.
      */
     public String parseResume(MultipartFile file) throws IOException {
-        String contentType = file.getContentType();
-        String rawText = "";
+        String rawText = extractRawText(file);
+        return structureRawText(rawText, file.getOriginalFilename());
+    }
 
+    /**
+     * Extracts raw text directly from a MultipartFile.
+     */
+    public String extractRawText(MultipartFile file) throws IOException {
+        String contentType = file.getContentType();
         if (contentType != null && contentType.equals("application/pdf")) {
-            rawText = extractTextFromPdf(file.getBytes());
+            return extractTextFromPdf(file.getBytes());
         } else if (contentType != null && (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
                 || contentType.equals("application/msword"))) {
-            rawText = extractTextFromDocx(file.getInputStream());
+            return extractTextFromDocx(file.getInputStream());
         } else {
             throw new IllegalArgumentException("Unsupported file type. Please upload a PDF or DOCX file.");
         }
-
-        return structureRawText(rawText, file.getOriginalFilename());
     }
 
     /**

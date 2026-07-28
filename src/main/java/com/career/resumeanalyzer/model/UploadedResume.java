@@ -36,6 +36,9 @@ public class UploadedResume {
     @Column(name = "parsed_content", columnDefinition = "LONGTEXT")
     private String parsedContent;
 
+    @Column(name = "raw_text", columnDefinition = "LONGTEXT")
+    private String rawText;
+
     // Pre-persist hook to set upload date
     @PrePersist
     protected void onCreate() {
@@ -125,5 +128,13 @@ public class UploadedResume {
 
     public void setParsedContent(String parsedContent) {
         this.parsedContent = parsedContent;
+    }
+
+    public String getRawText() {
+        return rawText;
+    }
+
+    public void setRawText(String rawText) {
+        this.rawText = rawText;
     }
 }

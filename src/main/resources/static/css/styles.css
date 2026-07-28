@@ -1048,7 +1048,7 @@ body {
     width: 90%;
     max-width: 800px;
     height: 80vh;
-    background: #ffffff;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     display: flex;
@@ -1069,7 +1069,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #f9fafb;
+    background: var(--bg-card-hover);
 }
 
 .modal-header h3 {
@@ -1184,7 +1184,7 @@ body {
 }
 
 .report-skill {
-    background: #f3f4f6;
+    background: var(--bg-dark);
     border: 1px solid var(--border-color);
     padding: 0.25rem 0.6rem;
     border-radius: 4px;
@@ -1199,7 +1199,7 @@ body {
 }
 
 .report-item {
-    background: #ffffff;
+    background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0.85rem;
@@ -1233,10 +1233,10 @@ body {
 .json-code {
     display: block;
     padding: 1.2rem;
-    background: #f9fafb;
+    background: var(--bg-dark);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    color: #065f46;
+    color: #10b981;
     font-family: 'Courier New', Courier, monospace;
     font-size: 0.78rem;
     line-height: 1.45;
@@ -1249,7 +1249,7 @@ body {
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: flex-end;
-    background: #f9fafb;
+    background: var(--bg-card-hover);
 }
 
 /* Helpers */
@@ -1702,9 +1702,41 @@ body.dark-mode {
 }
 
 body.dark-mode input, 
-body.dark-mode textarea {
+body.dark-mode textarea,
+body.dark-mode select {
     background-color: #0b091f;
     color: #f3f4f6;
+    border-color: #24214d;
+}
+
+body.dark-mode select option {
+    background-color: #0d0b21;
+    color: #f3f4f6;
+}
+
+body.dark-mode .modal-container {
+    background-color: #0d0b21;
+    border-color: #24214d;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .modal-header,
+body.dark-mode .modal-footer {
+    background-color: #12102e;
+    border-color: #24214d;
+}
+
+body.dark-mode .modal-tab {
+    color: #9ca3af;
+}
+
+body.dark-mode .modal-tab:hover {
+    color: #f3f4f6;
+}
+
+body.dark-mode .modal-tab.active {
+    color: #818cf8;
+    border-bottom-color: #818cf8;
 }
 
 body.dark-mode .recent-item, 
@@ -1752,6 +1784,8 @@ body.dark-mode .json-code {
 
 body.dark-mode .report-skill {
     background-color: #1a183d;
+    color: #e0e7ff;
+    border-color: #2e2b61;
 }
 
 /* ----------------------------------------------------

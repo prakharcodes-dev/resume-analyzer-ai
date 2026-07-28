@@ -24,6 +24,7 @@ const state = {
 document.addEventListener('DOMContentLoaded', () => {
     initThemeToggle();
     initRouting();
+    initSearch();
     initUpload();
     initProfileActions();
     loadProfile();
@@ -72,6 +73,19 @@ function initRouting() {
 }
 
 // ----------------------------------------------------
+// SEARCH FUNCTIONALITY
+// ----------------------------------------------------
+function initSearch() {
+    const searchInput = document.getElementById('top-search-input');
+    if (!searchInput) return;
+
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.trim().toLowerCase();
+        updateResumesUI(query);
+    });
+}
+
+// ----------------------------------------------------
 // DATA FETCHING: PROFILE & HISTORY
 // ----------------------------------------------------
 async function loadProfile() {
@@ -96,7 +110,9 @@ async function loadResumes() {
         const data = await response.json();
         
         state.resumes = data;
-        updateResumesUI();
+        const searchInput = document.getElementById('top-search-input');
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+        updateResumesUI(query);
         updateStats();
     } catch (err) {
         console.error(err);
@@ -110,10 +126,10 @@ async function loadResumes() {
 function updateProfileUI() {
     const prof = state.profile;
 
-    // Set Welcome Display
+    // Set Welcome Display & Top Header to Guest User consistently
     const firstName = prof.fullName ? prof.fullName.split(' ')[0] : 'Guest';
-    document.getElementById('welcome-name').textContent = firstName;
-    document.getElementById('user-display-name').textContent = prof.fullName || 'Guest User';
+    document.getElementById('welcome-name').textContent = firstName || 'Guest User';
+    document.getElementById('user-display-name').textContent = 'Guest User';
 
     // Form inputs
     document.getElementById('prof-name').value = prof.fullName || '';
@@ -315,19 +331,32 @@ function updateStats() {
 // ----------------------------------------------------
 // RESUME HISTORY UI RENDERING
 // ----------------------------------------------------
-function updateResumesUI() {
+function updateResumesUI(filterQuery = '') {
     const recentContainer = document.getElementById('recent-resumes-list');
     const tableBody = document.getElementById('resumes-table-body');
 
-    // 1. Dashboard View (Recent 3 Resumes)
+    const cleanQuery = (filterQuery || '').trim().toLowerCase();
+
+    // Helper to check if resume matches query
+    const matchesQuery = (resume) => {
+        if (!cleanQuery) return true;
+        if (resume.fileName && resume.fileName.toLowerCase().includes(cleanQuery)) return true;
+        if (resume.parseStatus && resume.parseStatus.toLowerCase().includes(cleanQuery)) return true;
+        if (resume.parsedContent && resume.parsedContent.toLowerCase().includes(cleanQuery)) return true;
+        return false;
+    };
+
+    const filteredResumes = state.resumes.filter(matchesQuery);
+
+    // 1. Dashboard View (Recent 3 Resumes matching filter)
     recentContainer.innerHTML = '';
-    const recents = state.resumes.slice(0, 3);
+    const recents = filteredResumes.slice(0, 3);
     
     if (recents.length === 0) {
         recentContainer.innerHTML = `
             <div class="empty-state">
                 <i class="fa-solid fa-folder-open"></i>
-                <p>No resumes uploaded yet.</p>
+                <p>${cleanQuery ? 'No matching resumes found.' : 'No resumes uploaded yet.'}</p>
             </div>`;
     } else {
         recents.forEach(resume => {
@@ -355,18 +384,18 @@ function updateResumesUI() {
         });
     }
 
-    // 2. Full History View Table
+    // 2. Full History View Table (matching filter)
     tableBody.innerHTML = '';
-    if (state.resumes.length === 0) {
+    if (filteredResumes.length === 0) {
         tableBody.innerHTML = `
             <tr>
                 <td colspan="5" class="text-center py-5">
                     <i class="fa-solid fa-folder-open" style="font-size: 2rem; opacity: 0.3; display: block; margin-bottom: 0.5rem;"></i>
-                    No resumes found. Go to the dashboard to upload your first resume!
+                    ${cleanQuery ? 'No resumes match your search query "' + escapeHtml(cleanQuery) + '".' : 'No resumes found. Go to the dashboard to upload your first resume!'}
                 </td>
             </tr>`;
     } else {
-        state.resumes.forEach(resume => {
+        filteredResumes.forEach(resume => {
             const tr = document.createElement('tr');
             const fileIcon = getFileIconClass(resume.fileType);
             const statusClass = resume.parseStatus.toLowerCase();

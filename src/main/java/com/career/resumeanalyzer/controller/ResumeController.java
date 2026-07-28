@@ -96,7 +96,9 @@ public class ResumeController {
 
             // Parse resume text using local service
             try {
+                String rawText = resumeParserService.extractRawText(file);
                 String parsedJson = resumeParserService.parseResume(file);
+                resume.setRawText(rawText);
                 resume.setParsedContent(parsedJson);
                 resume.setParseStatus("SUCCESS");
 
@@ -150,6 +152,16 @@ public class ResumeController {
         }
     }
 
+    private String getOrExtractRawText(UploadedResume resume) throws IOException {
+        if (resume.getRawText() != null && !resume.getRawText().isEmpty()) {
+            return resume.getRawText();
+        }
+        String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+        resume.setRawText(rawText);
+        uploadedResumeRepository.save(resume);
+        return rawText;
+    }
+
     @GetMapping("/history")
     public ResponseEntity<List<UploadedResume>> getHistory() {
         List<UploadedResume> resumes = uploadedResumeRepository.findByUserIdOrderByUploadDateDesc(DEFAULT_USER_ID);
@@ -173,7 +185,7 @@ public class ResumeController {
         }
         UploadedResume resume = optionalResume.get();
         try {
-            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String rawText = getOrExtractRawText(resume);
             String report = resumeAnalysisService.getAtsReport(resume, rawText);
             return ResponseEntity.ok(report);
         } catch (IOException e) {
@@ -190,7 +202,7 @@ public class ResumeController {
         }
         UploadedResume resume = optionalResume.get();
         try {
-            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String rawText = getOrExtractRawText(resume);
             String report = resumeAnalysisService.getAiAnalysis(resume, rawText);
             return ResponseEntity.ok(report);
         } catch (IOException e) {
@@ -207,7 +219,7 @@ public class ResumeController {
         }
         UploadedResume resume = optionalResume.get();
         try {
-            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String rawText = getOrExtractRawText(resume);
             String report = resumeAnalysisService.getResumeSuggestions(resume, rawText);
             return ResponseEntity.ok(report);
         } catch (IOException e) {
@@ -224,7 +236,7 @@ public class ResumeController {
         }
         UploadedResume resume = optionalResume.get();
         try {
-            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String rawText = getOrExtractRawText(resume);
             String report = resumeAnalysisService.getSkillsAnalysis(resume, rawText);
             return ResponseEntity.ok(report);
         } catch (IOException e) {
@@ -245,7 +257,7 @@ public class ResumeController {
         String jdText = requestBody.get("jobDescription").asText();
         UploadedResume resume = optionalResume.get();
         try {
-            String rawText = resumeParserService.extractRawText(resume.getFilePath(), resume.getFileType());
+            String rawText = getOrExtractRawText(resume);
             String report = resumeAnalysisService.matchJobDescription(resume, rawText, jdText);
             return ResponseEntity.ok(report);
         } catch (IOException e) {
