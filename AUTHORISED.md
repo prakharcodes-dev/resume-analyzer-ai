@@ -43,6 +43,50 @@ This log tracks all architectural and design changes authorized and implemented 
 - **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)**: Configured Skills Analysis Tab (`tab-skills-analysis`) displaying distribution meters, strength graphs, and categorized tags.
 - **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Created `renderSkillsAnalysisTab(data)` rendering lists, skill bars, and strength progress scales dynamically.
 
-### 4. Technical Documentation
-- **[detailed_project_report.md](file:///d:/AI%20RESUMER/detailed_project_report.md)**: Updated module definitions and API routes catalogs.
-- **[final_report.md](file:///d:/AI%20RESUMER/final_report.md)**: Documented `ResumeAnalysisService.java` additions.
+---
+
+## 🎨 Phase 4: Theme Fixes, Search Enablement & Backend Updates
+
+### 1. Theme Bug Resolution & UI Alignment
+- **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**: Fixed contrast bugs in dark mode theme switching. Standardized card backgrounds, form select options, dropdowns, and modal drawer overlays.
+- **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Resolved theme state initialization glitches to ensure persistent theme storage without visual flickering on initial load.
+
+### 2. Search Bar Enablement
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Enabled top navbar search bar `#top-search-input` for real-time filtering across uploaded resume filenames, parsing status, extracted skills, and education details.
+
+### 3. Backend Refinements
+- **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Updated file validation, error handling, and response payloads for cleaner REST communication.
+
+---
+
+## 🚀 Phase 5: Strength Report, Grammar Checker & History Enhancements
+
+### 1. Resume Strength Report
+- **[ResumeAnalysisService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/ResumeAnalysisService.java)**: Implemented `getStrengthReport(UploadedResume resume, String rawText)` analyzing:
+  - **Resume Strengths**: Word count suitability, skill density, complete contact info, web presence, quantifiable metrics, and readability.
+  - **Weaknesses**: Word count bounds, passive voice usage, weak verb phrasing ("responsible for"), missing summaries, and layout column pipes.
+  - **Missing Sections**: Audits Summary, Work Experience, Skills, Education, Projects, Certifications, and Achievements.
+  - **ATS Readiness**: ATS score percentage, compatibility rating (EXCELLENT, GOOD, NEEDS_IMPROVEMENT, POOR), and readiness breakdown.
+  - **Resume Rating**: Overall score out of 100 with letter grades (`A+ / Exceptional`, `A / Outstanding`, `B+ / Strong`, `B / Good`, `C / Fair`).
+  - **Improvement Suggestions**: Categorized actionable suggestions.
+- **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Exposed endpoint `GET /api/resumes/{id}/strength-report`.
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Added `Strength Report` tab (`tab-strength`) set as the default modal tab, rendered via `renderStrengthTab(data)`.
+
+### 2. Grammar & Writing Checker
+- **[ResumeAnalysisService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/ResumeAnalysisService.java)**: Implemented `getGrammarReport(UploadedResume resume, String rawText)` evaluating:
+  - **Grammar Errors**: Double spaces, missing bullet end punctuation, article misuses ("a" vs "an").
+  - **Spelling Mistakes**: Scans technical/dictionary typos and returns typo cards with suggested fixes.
+  - **Readability**: Flesch-Kincaid index, complexity level, and grade level assessment.
+  - **Writing Style**: Action verbs count vs passive voice constructs and style rating.
+  - **Professional Language**: Casual vocabulary check, formal tone grade, and replacement suggestions.
+  - **Sentence Structure**: Average sentence length, total sentences, run-on sentence warnings, and flow rating.
+- **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Exposed endpoint `GET /api/resumes/{id}/grammar-report`.
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Added `Grammar & Writing` tab (`tab-grammar`) rendered via `renderGrammarTab(data)`.
+
+### 3. Resume History & Version Control
+- **Version Tracking**: **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)** computes version badges (`v1.0`, `v2.0`, `v3.0`) chronologically per uploaded resume.
+- **Upload Dates & History Table**: Displays precise upload timestamps, file sizes, status badges, and version tags in `#view-resumes`.
+- **Delete Resume**: Enabled single-click file deletion removing database entries and local uploaded files.
+- **Download Previous Reports**:
+  - **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Added `GET /api/resumes/{id}/download-report/{type}` (`strength`, `grammar`, `ats`, `ai`).
+  - **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Added Download Report buttons in both the modal footer and the history table action column.

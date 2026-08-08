@@ -54,3 +54,10 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# Folders for personal use related to project
+
+.detailed_project_report.md
+.resume_analyzer.trace.db
+.resume-analyzer.mv.db
+

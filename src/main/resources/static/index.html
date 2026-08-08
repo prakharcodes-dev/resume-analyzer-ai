@@ -30,8 +30,8 @@
                     <span>Dashboard</span>
                 </a>
                 <a href="#resumes" class="nav-item" data-view="resumes">
-                    <i class="fa-solid fa-file-invoice"></i>
-                    <span>My Resumes</span>
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Resume History</span>
                 </a>
                 <a href="#profile" class="nav-item" data-view="profile">
                     <i class="fa-solid fa-user-tie"></i>
@@ -161,8 +161,8 @@
             <!-- Resumes View -->
             <section id="view-resumes" class="content-view">
                 <div class="view-header">
-                    <h2>Resume History & Version Control</h2>
-                    <p>Manage your uploaded resumes, check parsing status, and view structured reports.</p>
+                    <h2>Resume History & Versions</h2>
+                    <p>Store, track versions, view comprehensive AI reports, and download previous reports.</p>
                 </div>
                 <div class="card mt-4">
                     <div class="table-container">
@@ -170,10 +170,11 @@
                             <thead>
                                 <tr>
                                     <th>File Name</th>
+                                    <th>Version</th>
                                     <th>Upload Date</th>
                                     <th>File Size</th>
                                     <th>Status</th>
-                                    <th>Actions</th>
+                                    <th>Actions & Downloads</th>
                                 </tr>
                             </thead>
                             <tbody id="resumes-table-body">
@@ -306,15 +307,160 @@
             </div>
             <div class="modal-body">
                 <div class="modal-tabs">
-                    <button class="modal-tab active" data-tab="tab-structured">Structured View</button>
-                    <button class="modal-tab" data-tab="tab-ats">ATS Checker</button>
-                    <button class="modal-tab" data-tab="tab-match">Job Match</button>
-                    <button class="modal-tab" data-tab="tab-ai">AI Analysis</button>
-                    <button class="modal-tab" data-tab="tab-suggestions">AI Suggestions</button>
-                    <button class="modal-tab" data-tab="tab-skills-analysis">Skills Analysis</button>
-                    <button class="modal-tab" data-tab="tab-json">Raw JSON</button>
+                    <button class="modal-tab active" data-tab="tab-strength"><i class="fa-solid fa-shield-halved"></i> Strength Report</button>
+                    <button class="modal-tab" data-tab="tab-grammar"><i class="fa-solid fa-pen-nib"></i> Grammar & Writing</button>
+                    <button class="modal-tab" data-tab="tab-structured"><i class="fa-solid fa-list-check"></i> Structured View</button>
+                    <button class="modal-tab" data-tab="tab-ats"><i class="fa-solid fa-gauge"></i> ATS Checker</button>
+                    <button class="modal-tab" data-tab="tab-match"><i class="fa-solid fa-bullseye"></i> Job Match</button>
+                    <button class="modal-tab" data-tab="tab-ai"><i class="fa-solid fa-robot"></i> AI Analysis</button>
+                    <button class="modal-tab" data-tab="tab-suggestions"><i class="fa-solid fa-lightbulb"></i> AI Suggestions</button>
+                    <button class="modal-tab" data-tab="tab-skills-analysis"><i class="fa-solid fa-chart-pie"></i> Skills Analysis</button>
+                    <button class="modal-tab" data-tab="tab-json"><i class="fa-solid fa-code"></i> Raw JSON</button>
                 </div>
-                <div class="tab-content active" id="tab-structured">
+
+                <!-- Resume Strength Report Tab -->
+                <div class="tab-content active" id="tab-strength">
+                    <div class="strength-report-container">
+                        <div class="analysis-status-card flex-header">
+                            <div>
+                                <h4><i class="fa-solid fa-shield-halved text-purple"></i> Resume Strength Report</h4>
+                                <p class="text-muted">An overall evaluation of resume quality, key strengths, weaknesses, ATS readiness, and improvement suggestions.</p>
+                            </div>
+                            <div class="rating-badge-container">
+                                <div class="rating-score-circle">
+                                    <span id="strength-rating-score">0</span>
+                                    <small>/ 100</small>
+                                </div>
+                                <div class="rating-grade-text" id="strength-rating-grade">Loading...</div>
+                            </div>
+                        </div>
+
+                        <div class="strength-grid mt-3">
+                            <!-- 1. Resume Strengths -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-circle-check text-success"></i> Resume Strengths</h5>
+                                <ul class="analysis-bullets success-bullets" id="str-strengths-list">
+                                    <!-- Dynamic strengths -->
+                                </ul>
+                            </div>
+
+                            <!-- 2. Weaknesses -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-triangle-exclamation text-danger"></i> Resume Weaknesses</h5>
+                                <ul class="analysis-bullets error-bullets" id="str-weaknesses-list">
+                                    <!-- Dynamic weaknesses -->
+                                </ul>
+                            </div>
+
+                            <!-- 3. Missing Sections -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-folder-minus text-warning"></i> Missing Sections</h5>
+                                <div class="missing-tags" id="str-missing-sections-tags">
+                                    <!-- Dynamic missing sections -->
+                                </div>
+                            </div>
+
+                            <!-- 4. ATS Readiness -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-gauge-high text-cyan"></i> ATS Readiness</h5>
+                                <div class="ats-readiness-box">
+                                    <div class="flex-header mb-2">
+                                        <span class="badge" id="str-ats-badge">EXCELLENT</span>
+                                        <strong id="str-ats-score-text">0% Score</strong>
+                                    </div>
+                                    <p class="small text-muted mb-0" id="str-ats-summary-text">Loading...</p>
+                                </div>
+                            </div>
+
+                            <!-- 5. Resume Rating -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-star text-warning"></i> Resume Rating Overview</h5>
+                                <div class="rating-overview-box">
+                                    <h3 id="str-rating-big">0 / 100</h3>
+                                    <p id="str-rating-label">Calculating rating grade...</p>
+                                </div>
+                            </div>
+
+                            <!-- 6. Improvement Suggestions -->
+                            <div class="analysis-detail-card full-width-card">
+                                <h5><i class="fa-solid fa-lightbulb text-purple"></i> Improvement Suggestions</h5>
+                                <ul class="analysis-bullets" id="str-suggestions-list">
+                                    <!-- Dynamic suggestions -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grammar & Writing Checker Tab -->
+                <div class="tab-content" id="tab-grammar">
+                    <div class="grammar-checker-container">
+                        <div class="analysis-status-card">
+                            <h4><i class="fa-solid fa-pen-nib text-cyan"></i> Grammar & Writing Checker</h4>
+                            <p class="text-muted">A linguistic check analyzing grammar, spelling, readability, writing style, professional language, and sentence structure.</p>
+                        </div>
+
+                        <div class="grammar-grid mt-3">
+                            <!-- 1. Grammar Errors -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-spell-check text-purple"></i> Grammar Errors</h5>
+                                <ul class="analysis-bullets" id="grm-errors-list">
+                                    <!-- Dynamic grammar errors -->
+                                </ul>
+                            </div>
+
+                            <!-- 2. Spelling Mistakes -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-font text-danger"></i> Spelling Mistakes</h5>
+                                <div class="spelling-mistakes-box" id="grm-spelling-container">
+                                    <!-- Dynamic typo cards -->
+                                </div>
+                            </div>
+
+                            <!-- 3. Readability -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-book-open text-green"></i> Readability Level</h5>
+                                <div class="readability-box">
+                                    <h3 id="grm-readability-score">0 / 100</h3>
+                                    <p class="badge badge-info" id="grm-readability-level">Moderate</p>
+                                    <p class="small text-muted mt-2 mb-0" id="grm-readability-grade">Grade level: --</p>
+                                </div>
+                            </div>
+
+                            <!-- 4. Writing Style -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-feather-pointed text-warning"></i> Writing Style</h5>
+                                <div class="writing-style-box">
+                                    <p><strong>Action Verbs Found:</strong> <span class="badge badge-success" id="grm-action-count">0</span></p>
+                                    <p><strong>Passive Phrases:</strong> <span class="badge badge-warning" id="grm-passive-count">0</span></p>
+                                    <p class="small text-muted mb-0"><strong>Style Rating:</strong> <span id="grm-style-rating">--</span></p>
+                                </div>
+                            </div>
+
+                            <!-- 5. Professional Language -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-user-tie text-cyan"></i> Professional Language & Tone</h5>
+                                <div class="tone-box">
+                                    <p><strong>Tone Status:</strong> <span id="grm-tone-status">Professional</span></p>
+                                    <p><strong>Formality Rating:</strong> <strong id="grm-formal-score">95%</strong></p>
+                                    <p class="small text-muted mb-0" id="grm-tone-summary">No casual vocabulary found.</p>
+                                </div>
+                            </div>
+
+                            <!-- 6. Sentence Structure -->
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-align-left text-purple"></i> Sentence Structure</h5>
+                                <div class="sentence-box">
+                                    <p><strong>Avg Sentence Length:</strong> <span id="grm-avg-sentence">0 words</span></p>
+                                    <p><strong>Total Sentences:</strong> <span id="grm-total-sentences">0</span></p>
+                                    <p class="small text-muted mb-0"><strong>Flow Rating:</strong> <span id="grm-sentence-flow">--</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-structured">
                     <div class="structured-report">
                         <div class="report-section">
                             <h4><i class="fa-solid fa-address-card text-purple"></i> Contact Details</h4>
@@ -659,7 +805,13 @@
                     <pre><code class="json-code" id="raw-json-content">Loading...</code></pre>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer flex-header">
+                <div class="report-download-group">
+                    <button class="btn btn-sm btn-outline" id="btn-download-strength" title="Download Resume Strength Report"><i class="fa-solid fa-shield-halved"></i> Download Strength Report</button>
+                    <button class="btn btn-sm btn-outline" id="btn-download-grammar" title="Download Grammar Report"><i class="fa-solid fa-pen-nib"></i> Download Grammar Report</button>
+                    <button class="btn btn-sm btn-outline" id="btn-download-ats" title="Download ATS Report"><i class="fa-solid fa-gauge"></i> Download ATS Report</button>
+                    <button class="btn btn-sm btn-outline" id="btn-download-ai" title="Download AI Report"><i class="fa-solid fa-robot"></i> Download AI Report</button>
+                </div>
                 <button class="btn btn-secondary" id="btn-close-modal-footer">Close Report</button>
             </div>
         </div>

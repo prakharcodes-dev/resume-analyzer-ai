@@ -735,7 +735,304 @@ public class ResumeAnalysisService {
         rootNode.set("distribution", distNode);
         rootNode.set("strength", strengthNode);
         rootNode.set("missingSkills", objectMapper.valueToTree(missingSkills));
-        rootNode.set("recommendedSkills", objectMapper.valueToTree(recommendedSkills));
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    /**
+     * Generate comprehensive Resume Strength Report.
+     * Includes: Resume Strengths, Weaknesses, Missing Sections, ATS Readiness, Resume Rating, and Improvement Suggestions.
+     */
+    public String getStrengthReport(UploadedResume resume, String rawText) {
+        ObjectNode rootNode = objectMapper.createObjectNode();
+
+        // 1. Parse structured JSON from DB
+        JsonNode parsed = null;
+        try {
+            parsed = objectMapper.readTree(resume.getParsedContent());
+        } catch (Exception e) {
+            parsed = objectMapper.createObjectNode();
+        }
+
+        String lowerText = rawText.toLowerCase();
+
+        // --- STRENGTHS ---
+        List<String> strengths = new ArrayList<>();
+        String[] words = rawText.split("\\s+");
+        int wordCount = words.length;
+
+        if (wordCount >= 350 && wordCount <= 900) {
+            strengths.add("Ideal Resume Length: Resume contains ~" + wordCount + " words, matching optimal single or double-page standards.");
+        } else if (wordCount > 200) {
+            strengths.add("Substantial Content: Contains ~" + wordCount + " words of detailed experience.");
+        }
+
+        if (parsed.has("skills") && parsed.get("skills").size() >= 5) {
+            strengths.add("Strong Skill Density: Explicitly lists " + parsed.get("skills").size() + "+ technical & professional skills.");
+        } else {
+            List<String> extractedSkills = extractSkillsFromText(rawText);
+            if (extractedSkills.size() >= 5) {
+                strengths.add("Extracted Tech Skills: Identified " + extractedSkills.size() + " industry-standard technical keywords.");
+            }
+        }
+
+        if (parsed.has("name") && !parsed.get("name").asText().isEmpty() &&
+            parsed.has("email") && !parsed.get("email").asText().isEmpty()) {
+            strengths.add("Complete Contact Header: Full name and email address are clearly identifiable at the top.");
+        }
+
+        if (lowerText.contains("github") || lowerText.contains("linkedin")) {
+            strengths.add("Professional Web Presence: Includes LinkedIn or GitHub URLs for verification.");
+        }
+
+        Pattern metricPattern = Pattern.compile("\\b(\\d+%(?:\\s+increase|\\s+decrease|\\s+improvement)?|\\$\\d+(?:k|m)?|\\d+\\+\\s+users|\\d+\\s+projects)\\b", Pattern.CASE_INSENSITIVE);
+        if (metricPattern.matcher(rawText).find()) {
+            strengths.add("Quantifiable Achievements: Uses numeric metrics ($ values, %, user counts) to prove impact.");
+        }
+
+        int readability = calculateReadabilityScore(rawText);
+        if (readability >= 55) {
+            strengths.add("High Readability Score (" + readability + "/100): Clear sentence flow that recruiters can easily scan.");
+        }
+
+        if (strengths.isEmpty()) {
+            strengths.add("Contains foundational text structure ready for optimization.");
+        }
+
+        // --- WEAKNESSES ---
+        List<String> weaknesses = new ArrayList<>();
+
+        if (wordCount < 250) {
+            weaknesses.add("Too Brief: Under 250 words. Add more details about your project deliverables and job duties.");
+        } else if (wordCount > 1100) {
+            weaknesses.add("Overly Wordy: Exceeds 1100 words. Consider tightening bullet points to keep recruiters engaged.");
+        }
+
+        Pattern passivePattern = Pattern.compile("(?m)^.*\\b(was|were|been)\\s+\\w+ed\\s+(by|using)\\b.*$", Pattern.CASE_INSENSITIVE);
+        if (passivePattern.matcher(rawText).find()) {
+            weaknesses.add("Passive Voice Usage: Several bullet points rely on passive verbs rather than strong action verbs.");
+        }
+
+        Pattern weakVerbPattern = Pattern.compile("\\b(responsible for|worked on|helped with|assisted in|involved in)\\b", Pattern.CASE_INSENSITIVE);
+        if (weakVerbPattern.matcher(rawText).find()) {
+            weaknesses.add("Weak Action Verbs: Uses phrases like 'responsible for' or 'worked on' instead of 'Spearheaded' or 'Engineered'.");
+        }
+
+        if (!lowerText.contains("summary") && !lowerText.contains("profile") && !lowerText.contains("about")) {
+            weaknesses.add("No Professional Summary: Lacks a top summary pitch highlighting key value proposition.");
+        }
+
+        if (countMatches(rawText, "\\|") > 8) {
+            weaknesses.add("Multi-Column Layout Clutter: Multiple pipe symbols '|' detected, which can confuse ATS parsers.");
+        }
+
+        if (weaknesses.isEmpty()) {
+            weaknesses.add("Minor styling tweaks only; content layout is solid.");
+        }
+
+        // --- MISSING SECTIONS ---
+        List<String> missingSections = new ArrayList<>();
+        if (!lowerText.contains("summary") && !lowerText.contains("profile") && !lowerText.contains("objective")) {
+            missingSections.add("Professional Summary / About Me");
+        }
+        if (!lowerText.contains("experience") && !lowerText.contains("work history") && !lowerText.contains("employment")) {
+            missingSections.add("Work Experience / Employment History");
+        }
+        if (!lowerText.contains("skills") && !lowerText.contains("technologies") && !lowerText.contains("competencies")) {
+            missingSections.add("Technical Skills");
+        }
+        if (!lowerText.contains("education") && !lowerText.contains("academic")) {
+            missingSections.add("Education");
+        }
+        if (!lowerText.contains("project") && !lowerText.contains("portfolio")) {
+            missingSections.add("Projects");
+        }
+        if (!lowerText.contains("certif") && !lowerText.contains("license")) {
+            missingSections.add("Certifications & Licenses");
+        }
+        if (!lowerText.contains("award") && !lowerText.contains("achievement") && !lowerText.contains("honor")) {
+            missingSections.add("Key Achievements & Awards");
+        }
+
+        // --- ATS READINESS ---
+        int completeness = calculateCompleteness(parsed);
+        int structure = calculateStructure(parsed);
+        int keyword = calculateKeywordScore(rawText);
+        int formatting = calculateFormattingScore(rawText, resume.getFileSize(), resume.getFileType());
+
+        int atsScore = (int) Math.round((formatting * 0.20) + (structure * 0.25) + (keyword * 0.30) + (completeness * 0.25));
+        String atsRating = atsScore >= 85 ? "EXCELLENT" : atsScore >= 70 ? "GOOD" : atsScore >= 50 ? "NEEDS_IMPROVEMENT" : "POOR";
+
+        ObjectNode atsNode = objectMapper.createObjectNode();
+        atsNode.put("score", atsScore);
+        atsNode.put("rating", atsRating);
+        atsNode.put("summary", "ATS Readiness is " + atsRating + " (" + atsScore + "%). Parsers will evaluate structure, keywords, and completeness cleanly.");
+
+        // --- RESUME RATING ---
+        int overallScore = (int) Math.round((atsScore * 0.40) + (readability * 0.30) + (Math.min(strengths.size() * 15, 100) * 0.30));
+        overallScore = Math.max(Math.min(overallScore, 98), 30);
+
+        String grade = "C / Average";
+        if (overallScore >= 90) grade = "A+ / Exceptional";
+        else if (overallScore >= 82) grade = "A / Outstanding";
+        else if (overallScore >= 74) grade = "B+ / Strong";
+        else if (overallScore >= 65) grade = "B / Good";
+        else if (overallScore >= 55) grade = "C+ / Fair";
+
+        ObjectNode ratingNode = objectMapper.createObjectNode();
+        ratingNode.put("score", overallScore);
+        ratingNode.put("grade", grade);
+        ratingNode.put("label", "Resume Strength Rating");
+
+        // --- IMPROVEMENT SUGGESTIONS ---
+        List<String> suggestions = new ArrayList<>();
+        if (!missingSections.isEmpty()) {
+            suggestions.add("Add missing key sections: " + String.join(", ", missingSections) + ".");
+        }
+        if (weaknesses.stream().anyMatch(w -> w.contains("Weak Action Verbs"))) {
+            suggestions.add("Replace passive verbs ('responsible for') with high-impact action verbs like 'Engineered', 'Spearheaded', 'Architected'.");
+        }
+        if (!strengths.stream().anyMatch(s -> s.contains("Quantifiable"))) {
+            suggestions.add("Incorporate quantifiable metrics (e.g. 'Improved speed by 30%', 'Managed $50k budget') in your work bullets.");
+        }
+        if (keyword < 70) {
+            suggestions.add("Enhance technical keyword density by listing specific frameworks, databases, and DevOps tools.");
+        }
+        suggestions.add("Keep resume formatting clean without multi-column graphical elements for seamless ATS indexing.");
+
+        rootNode.set("strengths", objectMapper.valueToTree(strengths));
+        rootNode.set("weaknesses", objectMapper.valueToTree(weaknesses));
+        rootNode.set("missingSections", objectMapper.valueToTree(missingSections));
+        rootNode.set("atsReadiness", atsNode);
+        rootNode.set("resumeRating", ratingNode);
+        rootNode.set("improvementSuggestions", objectMapper.valueToTree(suggestions));
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    /**
+     * Generate comprehensive Grammar & Writing Checker Report.
+     * Checks: Grammar Errors, Spelling Mistakes, Readability, Writing Style, Professional Language, Sentence Structure.
+     */
+    public String getGrammarReport(UploadedResume resume, String rawText) {
+        ObjectNode rootNode = objectMapper.createObjectNode();
+
+        // 1. Grammar Errors
+        List<String> grammarErrors = new ArrayList<>();
+        if (rawText.contains("  ")) {
+            grammarErrors.add("Spacing Anomaly: Double spaces detected between words. Clean up extra spaces.");
+        }
+        if (countMatches(rawText, "(?m)^[•\\-*]\\s+.*[^\\.!?]$") > 2) {
+            grammarErrors.add("Punctuation Consistency: Multiple bullet points lack closing periods.");
+        }
+        if (Pattern.compile("\\b(a)\\s+[aeiou]", Pattern.CASE_INSENSITIVE).matcher(rawText).find()) {
+            grammarErrors.add("Article Warning: Check use of 'a' vs 'an' before vowel sounds (e.g., 'a AWS' -> 'an AWS').");
+        }
+        if (grammarErrors.isEmpty()) {
+            grammarErrors.add("No major grammar or punctuation syntax errors found.");
+        }
+
+        // 2. Spelling Mistakes
+        List<ObjectNode> spellingMistakes = new ArrayList<>();
+        for (Map.Entry<String, String> typo : COMMON_TYPOS.entrySet()) {
+            Pattern p = Pattern.compile("\\b(" + typo.getKey() + ")\\b", Pattern.CASE_INSENSITIVE);
+            Matcher m = p.matcher(rawText);
+            if (m.find()) {
+                ObjectNode item = objectMapper.createObjectNode();
+                item.put("found", m.group(1));
+                item.put("suggestion", typo.getValue());
+                item.put("message", "Typo detected: '" + m.group(1) + "' -> Suggested fix: '" + typo.getValue() + "'");
+                spellingMistakes.add(item);
+            }
+        }
+
+        // 3. Readability Metrics
+        int fleschScore = calculateReadabilityScore(rawText);
+        String level = fleschScore >= 70 ? "Easy to Read" : fleschScore >= 45 ? "Moderate Complexity" : "Hard to Read";
+        String grade = fleschScore >= 70 ? "8th - 10th Grade (Ideal for fast scanning)" : fleschScore >= 45 ? "Collegiate (Standard Technical)" : "Advanced/Dense";
+
+        ObjectNode readabilityNode = objectMapper.createObjectNode();
+        readabilityNode.put("score", fleschScore);
+        readabilityNode.put("level", level);
+        readabilityNode.put("grade", grade);
+        readabilityNode.put("summary", "Flesch Readability Score: " + fleschScore + "/100 (" + level + ").");
+
+        // 4. Writing Style
+        Pattern passivePattern = Pattern.compile("(?m)^.*\\b(was|were|been)\\s+\\w+ed\\s+(by|using)\\b.*$", Pattern.CASE_INSENSITIVE);
+        Matcher passiveMatcher = passivePattern.matcher(rawText);
+        int passiveCount = 0;
+        List<String> passiveExamples = new ArrayList<>();
+        while (passiveMatcher.find()) {
+            passiveCount++;
+            if (passiveExamples.size() < 3) {
+                passiveExamples.add(passiveMatcher.group().trim());
+            }
+        }
+
+        Pattern actionPattern = Pattern.compile("\\b(engineered|developed|architected|spearheaded|implemented|optimized|designed|created|led|built|automated|resolved|managed)\\b", Pattern.CASE_INSENSITIVE);
+        Matcher actionMatcher = actionPattern.matcher(rawText);
+        int actionCount = 0;
+        while (actionMatcher.find()) actionCount++;
+
+        ObjectNode styleNode = objectMapper.createObjectNode();
+        styleNode.put("actionVerbsCount", actionCount);
+        styleNode.put("passiveVoiceCount", passiveCount);
+        styleNode.put("styleRating", actionCount > passiveCount * 2 ? "Strong Action-Oriented Style" : "Needs Stronger Verbs");
+        styleNode.set("passiveExamples", objectMapper.valueToTree(passiveExamples));
+
+        // 5. Professional Language & Tone
+        List<String> casualWordsFound = new ArrayList<>();
+        String[] casualWords = {"cool", "awesome", "stuff", "like", "basically", "actually", "wanna", "gonna", "something", "kinda"};
+        for (String cw : casualWords) {
+            Pattern p = Pattern.compile("\\b" + cw + "\\b", Pattern.CASE_INSENSITIVE);
+            if (p.matcher(rawText).find()) casualWordsFound.add(cw);
+        }
+
+        String toneStatus = casualWordsFound.isEmpty() ? "Highly Professional & Formal" : "Contains Casual Phrasing";
+        int formalScore = casualWordsFound.isEmpty() ? 95 : 65;
+
+        ObjectNode toneNode = objectMapper.createObjectNode();
+        toneNode.put("status", toneStatus);
+        toneNode.put("formalScore", formalScore);
+        toneNode.set("casualWords", objectMapper.valueToTree(casualWordsFound));
+        toneNode.put("summary", casualWordsFound.isEmpty() ? 
+                "Text maintains an objective, impact-driven professional tone." : 
+                "Consider replacing informal terms (" + String.join(", ", casualWordsFound) + ") with technical terminology.");
+
+        // 6. Sentence Structure
+        String[] sentences = rawText.split("[.!?]+\\s+");
+        int totalSentences = Math.max(sentences.length, 1);
+        String[] wordsArr = rawText.split("\\s+");
+        int avgSentenceLength = Math.round((float) wordsArr.length / totalSentences);
+
+        List<String> longSentences = new ArrayList<>();
+        for (String s : sentences) {
+            String trimmed = s.trim();
+            if (trimmed.split("\\s+").length > 35 && longSentences.size() < 3) {
+                longSentences.add(trimmed);
+            }
+        }
+
+        ObjectNode sentenceNode = objectMapper.createObjectNode();
+        sentenceNode.put("totalSentences", totalSentences);
+        sentenceNode.put("avgSentenceLength", avgSentenceLength);
+        sentenceNode.put("longSentencesCount", longSentences.size());
+        sentenceNode.set("longSentencesExamples", objectMapper.valueToTree(longSentences));
+        sentenceNode.put("flowRating", avgSentenceLength >= 10 && avgSentenceLength <= 22 ? "Excellent Flow & Rhythm" : "Sentence length varies");
+
+        rootNode.set("grammarErrors", objectMapper.valueToTree(grammarErrors));
+        rootNode.set("spellingMistakes", objectMapper.valueToTree(spellingMistakes));
+        rootNode.set("readability", readabilityNode);
+        rootNode.set("writingStyle", styleNode);
+        rootNode.set("professionalLanguage", toneNode);
+        rootNode.set("sentenceStructure", sentenceNode);
 
         try {
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);

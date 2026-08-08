@@ -245,6 +245,87 @@ public class ResumeController {
         }
     }
 
+    @GetMapping("/{id}/strength-report")
+    public ResponseEntity<?> getStrengthReport(@PathVariable("id") Long id) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = getOrExtractRawText(resume);
+            String report = resumeAnalysisService.getStrengthReport(resume, rawText);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @GetMapping("/{id}/grammar-report")
+    public ResponseEntity<?> getGrammarReport(@PathVariable("id") Long id) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = getOrExtractRawText(resume);
+            String report = resumeAnalysisService.getGrammarReport(resume, rawText);
+            return ResponseEntity.ok(report);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @GetMapping("/{id}/download-report/{type}")
+    public ResponseEntity<?> downloadReport(@PathVariable("id") Long id, @PathVariable("type") String type) {
+        Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);
+        if (optionalResume.isEmpty() || !optionalResume.get().getUser().getId().equals(DEFAULT_USER_ID)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resume not found.");
+        }
+        UploadedResume resume = optionalResume.get();
+        try {
+            String rawText = getOrExtractRawText(resume);
+            String content = "";
+            String reportTitle = "Report";
+
+            switch (type.toLowerCase()) {
+                case "strength":
+                    content = resumeAnalysisService.getStrengthReport(resume, rawText);
+                    reportTitle = "Resume_Strength_Report";
+                    break;
+                case "grammar":
+                    content = resumeAnalysisService.getGrammarReport(resume, rawText);
+                    reportTitle = "Grammar_Writing_Report";
+                    break;
+                case "ats":
+                    content = resumeAnalysisService.getAtsReport(resume, rawText);
+                    reportTitle = "ATS_Readiness_Report";
+                    break;
+                case "ai":
+                    content = resumeAnalysisService.getAiAnalysis(resume, rawText);
+                    reportTitle = "AI_Analysis_Report";
+                    break;
+                default:
+                    content = resumeAnalysisService.getStrengthReport(resume, rawText);
+                    reportTitle = "Resume_Report";
+                    break;
+            }
+
+            String filename = resume.getFileName().replaceAll("[^a-zA-Z0-9.-]", "_") + "_" + reportTitle + ".json";
+            
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .header("Content-Type", "application/json")
+                    .body(content);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to generate report download: " + e.getMessage());
+        }
+    }
+
     @PostMapping("/{id}/match")
     public ResponseEntity<?> matchJobDescription(@PathVariable("id") Long id, @RequestBody JsonNode requestBody) {
         Optional<UploadedResume> optionalResume = uploadedResumeRepository.findById(id);

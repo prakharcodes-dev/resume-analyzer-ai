@@ -1897,6 +1897,124 @@ body.dark-mode .report-skill {
     padding: 0.15rem 0.45rem;
 }
 
+/* ----------------------------------------------------
+   VERSION BADGES & REPORT DOWNLOAD STYLES
+   ---------------------------------------------------- */
+.version-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    background: rgba(99, 102, 241, 0.12);
+    color: var(--primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+body.dark-mode .version-badge {
+    background: rgba(129, 140, 248, 0.18);
+    color: #a5b4fc;
+    border-color: rgba(129, 140, 248, 0.3);
+}
+
+.report-download-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* ----------------------------------------------------
+   STRENGTH REPORT & GRAMMAR CHECKER STYLES
+   ---------------------------------------------------- */
+.rating-badge-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rating-score-circle {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.rating-score-circle span {
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.rating-score-circle small {
+    font-size: 0.6rem;
+    opacity: 0.9;
+}
+
+.rating-grade-text {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.strength-grid, .grammar-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.success-bullets li {
+    position: relative;
+    list-style: none;
+    padding-left: 0.25rem;
+}
+
+.success-bullets li::before {
+    content: "✓";
+    color: var(--success);
+    font-weight: bold;
+    display: inline-block;
+    width: 1.2em;
+    margin-left: -1.2em;
+}
+
+.ats-readiness-box, .rating-overview-box, .readability-box, .writing-style-box, .tone-box, .sentence-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.85rem;
+}
+
+.rating-overview-box h3, .readability-box h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.2rem;
+}
+
+.spelling-item-card {
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--danger);
+    border-radius: 6px;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.78rem;
+}
+
+.spelling-mistakes-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+
 @media(max-width: 1024px) {
     .dashboard-body {
         grid-template-columns: 1fr;

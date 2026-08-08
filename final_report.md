@@ -91,6 +91,8 @@ Here is the breakdown of the codebase, grouping files by their roles:
     * Uses **Regular Expressions** to search for contact fields (LinkedIn, Email, Phone).
     * Scans for heading tokens (`EDUCATION`, `EXPERIENCE`, `SKILLS`, `PROJECTS`) to capture text groups, structuring them into clean JSON nodes via Jackson's `ObjectMapper`.
     * Contains a keyword dictionary search fallback to detect skills (like Java, Python, Docker) if a resume lacks a dedicated skills section header.
+* #### [ResumeAnalysisService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/ResumeAnalysisService.java)
+  * **Why it was created:** Implements rules-based and dictionary-lookup evaluation models. It calculates ATS scores, checks syntax/passive voice/weak verbs, computes Job Description matching metrics, compiles 10 distinct section optimization recommendations, and organizes skills into categorized strengths and distribution bars.
 
 ### 6. Web Controllers (REST API Endpoints)
 

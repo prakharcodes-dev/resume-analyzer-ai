@@ -389,16 +389,24 @@ function updateResumesUI(filterQuery = '') {
     if (filteredResumes.length === 0) {
         tableBody.innerHTML = `
             <tr>
-                <td colspan="5" class="text-center py-5">
+                <td colspan="6" class="text-center py-5">
                     <i class="fa-solid fa-folder-open" style="font-size: 2rem; opacity: 0.3; display: block; margin-bottom: 0.5rem;"></i>
                     ${cleanQuery ? 'No resumes match your search query "' + escapeHtml(cleanQuery) + '".' : 'No resumes found. Go to the dashboard to upload your first resume!'}
                 </td>
             </tr>`;
     } else {
-        filteredResumes.forEach(resume => {
+        // Compute version numbers based on chronological order (oldest = v1.0, newest = vN.0)
+        // state.resumes is ordered by uploadDate DESC, so length - index gives chronological version
+        filteredResumes.forEach((resume, idx) => {
             const tr = document.createElement('tr');
             const fileIcon = getFileIconClass(resume.fileType);
             const statusClass = resume.parseStatus.toLowerCase();
+            
+            // Version tag computation
+            const totalCount = state.resumes.length;
+            const originalIndex = state.resumes.findIndex(r => r.id === resume.id);
+            const versionNum = originalIndex !== -1 ? (totalCount - originalIndex) : (filteredResumes.length - idx);
+            const versionTag = `v${versionNum}.0`;
 
             tr.innerHTML = `
                 <td>
@@ -407,12 +415,16 @@ function updateResumesUI(filterQuery = '') {
                         <strong>${escapeHtml(resume.fileName)}</strong>
                     </span>
                 </td>
+                <td><span class="version-badge"><i class="fa-solid fa-code-branch"></i> ${versionTag}</span></td>
                 <td>${formatDate(resume.uploadDate)}</td>
                 <td>${(resume.fileSize / 1024).toFixed(1)} KB</td>
                 <td><span class="status-badge ${statusClass}">${resume.parseStatus}</span></td>
                 <td class="actions">
                     <button class="btn btn-sm btn-outline" onclick="viewResumeDetails(${resume.id})">
                         <i class="fa-solid fa-magnifying-glass-chart"></i> View Report
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="downloadReport(${resume.id}, 'strength')" title="Download Report">
+                        <i class="fa-solid fa-download"></i> Download
                     </button>
                     <button class="btn-danger-icon" onclick="deleteResume(${resume.id})" title="Delete File">
                         <i class="fa-solid fa-trash-can"></i>
@@ -726,16 +738,27 @@ window.viewResumeDetails = async function(id) {
     // 1. Show modal overlay
     modal.classList.add('open');
 
-    // Reset tabs to default (Structured View)
+    // Reset tabs to default (Strength Report View)
     const tabs = modal.querySelectorAll('.modal-tab');
     const tabContents = modal.querySelectorAll('.tab-content');
     tabs.forEach(t => t.classList.remove('active'));
     tabContents.forEach(c => c.classList.remove('active'));
     
-    const defaultTab = modal.querySelector('.modal-tab[data-tab="tab-structured"]');
+    const defaultTab = modal.querySelector('.modal-tab[data-tab="tab-strength"]');
     if (defaultTab) defaultTab.classList.add('active');
-    const defaultContent = document.getElementById('tab-structured');
+    const defaultContent = document.getElementById('tab-strength');
     if (defaultContent) defaultContent.classList.add('active');
+
+    // Bind modal footer download buttons
+    const btnDlStrength = document.getElementById('btn-download-strength');
+    const btnDlGrammar = document.getElementById('btn-download-grammar');
+    const btnDlAts = document.getElementById('btn-download-ats');
+    const btnDlAi = document.getElementById('btn-download-ai');
+
+    if (btnDlStrength) btnDlStrength.onclick = () => downloadReport(id, 'strength');
+    if (btnDlGrammar) btnDlGrammar.onclick = () => downloadReport(id, 'grammar');
+    if (btnDlAts) btnDlAts.onclick = () => downloadReport(id, 'ats');
+    if (btnDlAi) btnDlAi.onclick = () => downloadReport(id, 'ai');
 
     // Reset Job Description match tab fields
     const jdTextarea = document.getElementById('jd-textarea');
@@ -904,6 +927,18 @@ window.viewResumeDetails = async function(id) {
             repProjContainer.innerHTML = '<div class="text-muted">No projects parsed</div>';
         }
 
+        // Fetch Strength Report
+        fetch(`/api/resumes/${id}/strength-report`)
+            .then(res => res.json())
+            .then(strengthData => renderStrengthTab(strengthData))
+            .catch(err => console.error("Error loading Strength report:", err));
+
+        // Fetch Grammar Report
+        fetch(`/api/resumes/${id}/grammar-report`)
+            .then(res => res.json())
+            .then(grammarData => renderGrammarTab(grammarData))
+            .catch(err => console.error("Error loading Grammar report:", err));
+
         // Fetch ATS Report Metrics
         fetch(`/api/resumes/${id}/ats`)
             .then(res => res.json())
@@ -916,13 +951,13 @@ window.viewResumeDetails = async function(id) {
             .then(aiData => renderAiTab(aiData))
             .catch(err => console.error("Error loading AI analysis:", err));
 
-        // Fetch AI Suggestions (Feature 8)
+        // Fetch AI Suggestions
         fetch(`/api/resumes/${id}/suggestions`)
             .then(res => res.json())
             .then(sugData => renderSuggestionsTab(sugData))
             .catch(err => console.error("Error loading suggestions:", err));
 
-        // Fetch Skills Analysis (Feature 9)
+        // Fetch Skills Analysis
         fetch(`/api/resumes/${id}/skills-analysis`)
             .then(res => res.json())
             .then(skillsData => renderSkillsAnalysisTab(skillsData))
@@ -1374,4 +1409,191 @@ function renderSkillsAnalysisTab(data) {
             recContainer.innerHTML = '<span class="text-muted small">Profile is well optimized.</span>';
         }
     }
+}
+
+// ----------------------------------------------------
+// DOWNLOAD REPORT HANDLER
+// ----------------------------------------------------
+window.downloadReport = function(id, type = 'strength') {
+    if (!id) return;
+    const url = `/api/resumes/${id}/download-report/${type}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showNotification(`Downloading ${type.toUpperCase()} report...`, 'info');
+};
+
+// ----------------------------------------------------
+// RENDER STRENGTH TAB
+// ----------------------------------------------------
+function renderStrengthTab(data) {
+    if (!data) return;
+
+    // Rating Overview
+    const ratingNode = data.resumeRating || {};
+    const ratingScore = ratingNode.score || 0;
+    const ratingGrade = ratingNode.grade || '--';
+
+    const scoreEl = document.getElementById('strength-rating-score');
+    if (scoreEl) scoreEl.textContent = ratingScore;
+    const gradeEl = document.getElementById('strength-rating-grade');
+    if (gradeEl) gradeEl.textContent = ratingGrade;
+    const bigEl = document.getElementById('str-rating-big');
+    if (bigEl) bigEl.textContent = `${ratingScore} / 100`;
+    const labelEl = document.getElementById('str-rating-label');
+    if (labelEl) labelEl.textContent = `Grade: ${ratingGrade}`;
+
+    // 1. Resume Strengths
+    const strList = document.getElementById('str-strengths-list');
+    if (strList) {
+        strList.innerHTML = '';
+        if (data.strengths && data.strengths.length > 0) {
+            data.strengths.forEach(str => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fa-solid fa-check text-success mr-2"></i> ${escapeHtml(str)}`;
+                strList.appendChild(li);
+            });
+        } else {
+            strList.innerHTML = '<li class="text-muted">No strengths evaluated.</li>';
+        }
+    }
+
+    // 2. Weaknesses
+    const weakList = document.getElementById('str-weaknesses-list');
+    if (weakList) {
+        weakList.innerHTML = '';
+        if (data.weaknesses && data.weaknesses.length > 0) {
+            data.weaknesses.forEach(w => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-danger mr-2"></i> ${escapeHtml(w)}`;
+                weakList.appendChild(li);
+            });
+        } else {
+            weakList.innerHTML = '<li class="text-muted">No major weaknesses identified.</li>';
+        }
+    }
+
+    // 3. Missing Sections
+    const missingContainer = document.getElementById('str-missing-sections-tags');
+    if (missingContainer) {
+        missingContainer.innerHTML = '';
+        if (data.missingSections && data.missingSections.length > 0) {
+            data.missingSections.forEach(sec => {
+                const span = document.createElement('span');
+                span.className = 'missing-tag skill-missing';
+                span.textContent = sec;
+                missingContainer.appendChild(span);
+            });
+        } else {
+            missingContainer.innerHTML = '<span class="text-muted small"><i class="fa-solid fa-circle-check text-success"></i> All standard resume sections present!</span>';
+        }
+    }
+
+    // 4. ATS Readiness
+    const atsNode = data.atsReadiness || {};
+    const atsBadge = document.getElementById('str-ats-badge');
+    if (atsBadge) {
+        const rating = atsNode.rating || 'POOR';
+        atsBadge.textContent = rating;
+        atsBadge.className = 'badge ' + (rating === 'EXCELLENT' ? 'badge-success' : rating === 'GOOD' ? 'badge-info' : 'badge-warning');
+    }
+    const atsScoreText = document.getElementById('str-ats-score-text');
+    if (atsScoreText) atsScoreText.textContent = `${atsNode.score || 0}% ATS Compatibility`;
+    const atsSummary = document.getElementById('str-ats-summary-text');
+    if (atsSummary) atsSummary.textContent = atsNode.summary || '';
+
+    // 6. Improvement Suggestions
+    const sugList = document.getElementById('str-suggestions-list');
+    if (sugList) {
+        sugList.innerHTML = '';
+        if (data.improvementSuggestions && data.improvementSuggestions.length > 0) {
+            data.improvementSuggestions.forEach(sug => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fa-solid fa-lightbulb text-warning mr-2"></i> ${escapeHtml(sug)}`;
+                sugList.appendChild(li);
+            });
+        } else {
+            sugList.innerHTML = '<li class="text-muted">No pending improvement suggestions.</li>';
+        }
+    }
+}
+
+// ----------------------------------------------------
+// RENDER GRAMMAR & WRITING TAB
+// ----------------------------------------------------
+function renderGrammarTab(data) {
+    if (!data) return;
+
+    // 1. Grammar Errors
+    const grmList = document.getElementById('grm-errors-list');
+    if (grmList) {
+        grmList.innerHTML = '';
+        if (data.grammarErrors && data.grammarErrors.length > 0) {
+            data.grammarErrors.forEach(err => {
+                const li = document.createElement('li');
+                li.textContent = err;
+                grmList.appendChild(li);
+            });
+        } else {
+            grmList.innerHTML = '<li class="text-muted italic">No grammar errors found.</li>';
+        }
+    }
+
+    // 2. Spelling Mistakes
+    const spellingContainer = document.getElementById('grm-spelling-container');
+    if (spellingContainer) {
+        spellingContainer.innerHTML = '';
+        if (data.spellingMistakes && data.spellingMistakes.length > 0) {
+            data.spellingMistakes.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'spelling-item-card mb-2';
+                div.innerHTML = `
+                    <p class="mb-1"><span class="text-danger">Found typo:</span> <strong>"${escapeHtml(item.found || '')}"</strong></p>
+                    <p class="mb-0 text-success small"><i class="fa-solid fa-arrow-right"></i> Suggested correction: <strong>"${escapeHtml(item.suggestion || '')}"</strong></p>
+                `;
+                spellingContainer.appendChild(div);
+            });
+        } else {
+            spellingContainer.innerHTML = '<p class="text-muted small mb-0"><i class="fa-solid fa-check text-success"></i> No spelling errors found.</p>';
+        }
+    }
+
+    // 3. Readability
+    const readNode = data.readability || {};
+    const readScore = document.getElementById('grm-readability-score');
+    if (readScore) readScore.textContent = `${readNode.score || 0} / 100`;
+    const readLevel = document.getElementById('grm-readability-level');
+    if (readLevel) readLevel.textContent = readNode.level || 'Moderate';
+    const readGrade = document.getElementById('grm-readability-grade');
+    if (readGrade) readGrade.textContent = readNode.grade || '';
+
+    // 4. Writing Style
+    const styleNode = data.writingStyle || {};
+    const actionCount = document.getElementById('grm-action-count');
+    if (actionCount) actionCount.textContent = styleNode.actionVerbsCount || 0;
+    const passiveCount = document.getElementById('grm-passive-count');
+    if (passiveCount) passiveCount.textContent = styleNode.passiveVoiceCount || 0;
+    const styleRating = document.getElementById('grm-style-rating');
+    if (styleRating) styleRating.textContent = styleNode.styleRating || '--';
+
+    // 5. Professional Language & Tone
+    const toneNode = data.professionalLanguage || {};
+    const toneStatus = document.getElementById('grm-tone-status');
+    if (toneStatus) toneStatus.textContent = toneNode.status || 'Professional';
+    const formalScore = document.getElementById('grm-formal-score');
+    if (formalScore) formalScore.textContent = `${toneNode.formalScore || 95}%`;
+    const toneSummary = document.getElementById('grm-tone-summary');
+    if (toneSummary) toneSummary.textContent = toneNode.summary || '';
+
+    // 6. Sentence Structure
+    const sentenceNode = data.sentenceStructure || {};
+    const avgSentence = document.getElementById('grm-avg-sentence');
+    if (avgSentence) avgSentence.textContent = `${sentenceNode.avgSentenceLength || 0} words`;
+    const totalSentences = document.getElementById('grm-total-sentences');
+    if (totalSentences) totalSentences.textContent = sentenceNode.totalSentences || 0;
+    const flowRating = document.getElementById('grm-sentence-flow');
+    if (flowRating) flowRating.textContent = sentenceNode.flowRating || '--';
 }
