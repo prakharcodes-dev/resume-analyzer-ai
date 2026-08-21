@@ -1128,4 +1128,191 @@ public class ResumeAnalysisService {
         if (count == 1) return 55;
         return 20;
     }
+
+    /**
+     * Compare two resume versions (Version 1 vs Version 2).
+     * Generates: ATS Score Improvement, Added Skills, Removed Skills, Keyword Difference, Improvement Percentage.
+     */
+    public String compareResumes(UploadedResume r1, String rawText1, UploadedResume r2, String rawText2) {
+        ObjectNode rootNode = objectMapper.createObjectNode();
+
+        // 1. Calculate ATS Scores
+        int atsScore1 = parseAtsScore(getAtsReport(r1, rawText1));
+        int atsScore2 = parseAtsScore(getAtsReport(r2, rawText2));
+        int atsScoreDiff = atsScore2 - atsScore1;
+
+        // 2. Extract skills for both versions
+        List<String> skills1 = extractSkillsFromText(rawText1);
+        List<String> skills2 = extractSkillsFromText(rawText2);
+
+        // Also check parsed JSON skills
+        try {
+            JsonNode p1 = objectMapper.readTree(r1.getParsedContent());
+            if (p1.has("skills")) {
+                for (JsonNode sk : p1.get("skills")) {
+                    String skStr = sk.asText().trim();
+                    if (!skStr.isEmpty() && !skills1.contains(skStr)) skills1.add(skStr);
+                }
+            }
+        } catch (Exception e) {}
+
+        try {
+            JsonNode p2 = objectMapper.readTree(r2.getParsedContent());
+            if (p2.has("skills")) {
+                for (JsonNode sk : p2.get("skills")) {
+                    String skStr = sk.asText().trim();
+                    if (!skStr.isEmpty() && !skills2.contains(skStr)) skills2.add(skStr);
+                }
+            }
+        } catch (Exception e) {}
+
+        // Compute Added & Removed Skills (case-insensitive deduplication)
+        List<String> addedSkills = new ArrayList<>();
+        List<String> removedSkills = new ArrayList<>();
+
+        for (String s2 : skills2) {
+            boolean in1 = skills1.stream().anyMatch(s1 -> s1.equalsIgnoreCase(s2));
+            if (!in1) addedSkills.add(s2);
+        }
+
+        for (String s1 : skills1) {
+            boolean in2 = skills2.stream().anyMatch(s2 -> s2.equalsIgnoreCase(s1));
+            if (!in2) removedSkills.add(s1);
+        }
+
+        // 3. Extract Keywords for both versions
+        List<String> keywords1 = extractKeywordsFromText(rawText1);
+        List<String> keywords2 = extractKeywordsFromText(rawText2);
+
+        List<String> addedKeywords = new ArrayList<>();
+        List<String> removedKeywords = new ArrayList<>();
+
+        for (String k2 : keywords2) {
+            if (!keywords1.contains(k2)) addedKeywords.add(k2);
+        }
+        for (String k1 : keywords1) {
+            if (!keywords2.contains(k1)) removedKeywords.add(k1);
+        }
+
+        // 4. Compute Improvement Percentage
+        int improvementPercentage = 0;
+        if (atsScore1 > 0) {
+            improvementPercentage = (int) Math.round(((double) (atsScore2 - atsScore1) / atsScore1) * 100);
+        } else {
+            improvementPercentage = atsScore2 > 0 ? 100 : 0;
+        }
+
+        // Build Version 1 Object
+        ObjectNode v1Node = objectMapper.createObjectNode();
+        v1Node.put("id", r1.getId());
+        v1Node.put("fileName", r1.getFileName());
+        v1Node.put("uploadDate", r1.getUploadDate() != null ? r1.getUploadDate().toString() : "");
+        v1Node.put("atsScore", atsScore1);
+
+        // Build Version 2 Object
+        ObjectNode v2Node = objectMapper.createObjectNode();
+        v2Node.put("id", r2.getId());
+        v2Node.put("fileName", r2.getFileName());
+        v2Node.put("uploadDate", r2.getUploadDate() != null ? r2.getUploadDate().toString() : "");
+        v2Node.put("atsScore", atsScore2);
+
+        rootNode.set("resume1", v1Node);
+        rootNode.set("resume2", v2Node);
+        rootNode.put("atsScoreImprovement", atsScoreDiff);
+        rootNode.put("improvementPercentage", improvementPercentage);
+        rootNode.set("addedSkills", objectMapper.valueToTree(addedSkills));
+        rootNode.set("removedSkills", objectMapper.valueToTree(removedSkills));
+        rootNode.set("addedKeywords", objectMapper.valueToTree(addedKeywords));
+        rootNode.set("removedKeywords", objectMapper.valueToTree(removedKeywords));
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
+
+    private int parseAtsScore(String atsReportJson) {
+        try {
+            JsonNode node = objectMapper.readTree(atsReportJson);
+            if (node.has("atsScore")) {
+                return node.get("atsScore").asInt();
+            }
+        } catch (Exception e) {}
+        return 50;
+    }
+
+    /**
+     * Generate an AI Cover Letter based on Resume, Job Description, Company Name, and Job Role.
+     */
+    public String generateCoverLetter(UploadedResume resume, String rawText, String companyName, String jobRole, String jdText) {
+        ObjectNode rootNode = objectMapper.createObjectNode();
+
+        // Extract Candidate Details
+        String name = "Candidate Name";
+        String email = "candidate@example.com";
+        String phone = "";
+        
+        try {
+            JsonNode parsed = objectMapper.readTree(resume.getParsedContent());
+            if (parsed.has("name") && !parsed.get("name").asText().isEmpty()) name = parsed.get("name").asText();
+            if (parsed.has("email") && !parsed.get("email").asText().isEmpty()) email = parsed.get("email").asText();
+            if (parsed.has("phone") && !parsed.get("phone").asText().isEmpty()) phone = parsed.get("phone").asText();
+        } catch (Exception e) {}
+
+        List<String> skills = extractSkillsFromText(rawText);
+        String topSkillsStr = skills.isEmpty() ? "software development and problem solving" : String.join(", ", skills.subList(0, Math.min(skills.size(), 5)));
+
+        String compName = (companyName != null && !companyName.trim().isEmpty()) ? companyName.trim() : "Hiring Team";
+        String roleName = (jobRole != null && !jobRole.trim().isEmpty()) ? jobRole.trim() : "Target Position";
+
+        StringBuilder cl = new StringBuilder();
+
+        cl.append(name.toUpperCase()).append("\n");
+        if (!email.isEmpty()) cl.append("Email: ").append(email);
+        if (!phone.isEmpty()) cl.append(" | Phone: ").append(phone);
+        cl.append("\nDate: ").append(java.time.LocalDate.now().toString()).append("\n\n");
+
+        cl.append("To,\n");
+        cl.append("The Hiring Manager\n");
+        cl.append(compName).append("\n\n");
+
+        cl.append("Subject: Application for ").append(roleName).append(" Position\n\n");
+
+        cl.append("Dear Hiring Manager,\n\n");
+
+        cl.append("I am writing to express my strong interest in the ").append(roleName).append(" role at ").append(compName)
+          .append(". With a solid foundation in ").append(topSkillsStr)
+          .append(", I am enthusiastic about the opportunity to contribute my technical capabilities and engineering passion to your team.\n\n");
+
+        cl.append("Throughout my background, I have developed expertise in building scalable solutions, writing clean code, and collaborating effectively to solve complex technical challenges. ")
+          .append("My experience aligns closely with your core requirements, particularly in leveraging ").append(topSkillsStr)
+          .append(" to drive project success and deliver high-quality business impact.\n\n");
+
+        if (jdText != null && !jdText.trim().isEmpty()) {
+            List<String> jdKeywords = extractKeywordsFromText(jdText);
+            if (!jdKeywords.isEmpty()) {
+                cl.append("I was particularly drawn to ").append(compName)
+                  .append("'s focus on ").append(String.join(", ", jdKeywords.subList(0, Math.min(jdKeywords.size(), 3))))
+                  .append(". In my previous work, I have consistently applied rigorous standards to engineering deliverables and continuous performance optimization.\n\n");
+            }
+        }
+
+        cl.append("I welcome the opportunity to discuss how my skill set, background, and dedication can support ").append(compName)
+          .append("'s goals. Thank you for your time and consideration. I look forward to the possibility of an interview.\n\n");
+
+        cl.append("Sincerely,\n\n");
+        cl.append(name);
+
+        rootNode.put("candidateName", name);
+        rootNode.put("companyName", compName);
+        rootNode.put("jobRole", roleName);
+        rootNode.put("coverLetter", cl.toString());
+
+        try {
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
+        } catch (Exception e) {
+            return "{}";
+        }
+    }
 }

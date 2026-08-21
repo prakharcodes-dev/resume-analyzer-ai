@@ -59,6 +59,21 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 - **Top Navbar Search**: Real-time filtering across uploaded filenames, parsing status, skills, and education.
 - **Light & Dark Mode**: Persistent theme switching with custom space-obsidian and deep indigo dark mode styles.
 
+### ⚖️ 9. Resume Version Comparison (Feature 13)
+- Compare two resume versions side-by-side (Resume Version 1 vs Resume Version 2).
+- Generates:
+  - **ATS Score Delta**: Score improvement from Version 1 to Version 2 (`+15%`).
+  - **Added Skills**: Technical skills added in the newer version.
+  - **Removed Skills**: Omitted or removed skills.
+  - **Keyword Difference**: New keywords identified vs removed keywords.
+  - **Improvement Rate**: Overall optimization score growth percentage.
+
+### 📝 10. AI Cover Letter Generator (Feature 14)
+- Tailored cover letter generator based on: Selected Resume, Target Company Name, Job Role, and Job Description.
+- Outputs formatted, personalized application document with:
+  - Copy to Clipboard.
+  - Download as `.txt` file.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -89,6 +104,8 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 | `GET` | `/api/resumes/{id}/skills-analysis` | Get skills categorizations, distribution & strength graphs |
 | `GET` | `/api/resumes/{id}/download-report/{type}` | Download report file (`strength`, `grammar`, `ats`, `ai`) |
 | `POST` | `/api/resumes/{id}/match` | Compare resume against a target Job Description |
+| `POST` | `/api/resumes/compare` | Compare two resume versions side-by-side |
+| `POST` | `/api/resumes/cover-letter` | Generate AI Cover Letter tailored to company & role |
 | `DELETE` | `/api/resumes/{id}` | Delete resume record and stored local file |
 | `GET` | `/api/profile` | Get active user profile |
 | `PUT` | `/api/profile` | Update active user profile details |
@@ -126,6 +143,6 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 
 ## 📊 Project Status
 
-- **Current Status**: **Phase 5 Completed**
+- **Current Status**: **Phase 7 Completed**
 - **Offline Engine**: 100% functional (No external API keys required).
-- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, and Resume History & Report Downloads.
+- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, Dark Mode Theme Fixes, **Resume Comparison (Feature 13)**, and **AI Cover Letter Generator (Feature 14)**.

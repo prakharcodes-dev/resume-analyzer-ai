@@ -1045,16 +1045,17 @@ body {
 }
 
 .modal-container {
-    width: 90%;
-    max-width: 800px;
-    height: 80vh;
+    width: 98vw !important;
+    max-width: 1600px !important;
+    height: 95vh !important;
+    margin: auto !important;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
     transform: translateY(20px);
     transition: transform 0.2s ease;
 }
@@ -2042,4 +2043,348 @@ body.dark-mode .version-badge {
     .skills-split-grid {
         grid-template-columns: 1fr;
     }
+    .compare-dropdowns-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .compare-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    .cover-letter-grid {
+        grid-template-columns: 1fr;
+    }
 }
+
+/* ----------------------------------------------------
+   FORM CONTROLS & INPUT SYSTEM ENHANCEMENTS
+   ---------------------------------------------------- */
+.form-group-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    color: #818cf8 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    margin-bottom: 0.35rem !important;
+}
+
+.form-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.form-control,
+.form-select-lg,
+.form-input-lg,
+.form-textarea-lg {
+    background-color: var(--bg-card) !important;
+    border: 1.5px solid var(--border-color) !important;
+    border-radius: 10px !important;
+    padding: 0.85rem 1.1rem !important;
+    color: var(--text-main) !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.95rem !important;
+    outline: none !important;
+    width: 100% !important;
+    min-height: 48px !important;
+    line-height: 1.5 !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04) !important;
+}
+
+.form-control:focus,
+.form-select-lg:focus,
+.form-input-lg:focus,
+.form-textarea-lg:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+}
+
+body.dark-mode .form-control,
+body.dark-mode .form-select-lg,
+body.dark-mode .form-input-lg,
+body.dark-mode .form-textarea-lg,
+body.dark-mode select {
+    background-color: #0d0b21 !important;
+    border-color: #312e81 !important;
+    color: #f3f4f6 !important;
+}
+
+body.dark-mode select option {
+    background-color: #0d0b21 !important;
+    color: #f3f4f6 !important;
+    padding: 0.6rem !important;
+}
+
+/* ----------------------------------------------------
+   DARK MODE OVERRIDES & CONTRAST FIXES
+   ---------------------------------------------------- */
+body.dark-mode table,
+body.dark-mode .data-table,
+body.dark-mode .table-container,
+body.dark-mode table tbody,
+body.dark-mode .data-table tbody {
+    background-color: #0d0b21 !important;
+    border-color: #24214d !important;
+}
+
+body.dark-mode table th,
+body.dark-mode .data-table th,
+body.dark-mode table thead tr,
+body.dark-mode .data-table thead tr {
+    background-color: #12102e !important;
+    color: #a5b4fc !important;
+    border-bottom: 1.5px solid #24214d !important;
+    padding: 1rem 1.25rem !important;
+    font-weight: 700 !important;
+}
+
+body.dark-mode table td,
+body.dark-mode .data-table td,
+body.dark-mode table tbody tr,
+body.dark-mode .data-table tbody tr {
+    background-color: #0d0b21 !important;
+    color: #f3f4f6 !important;
+    border-bottom: 1px solid #24214d !important;
+    padding: 1rem 1.25rem !important;
+}
+
+body.dark-mode table tbody tr:hover,
+body.dark-mode table tbody tr:hover td,
+body.dark-mode .data-table tbody tr:hover,
+body.dark-mode .data-table tbody tr:hover td {
+    background-color: #1c1945 !important;
+}
+
+body.dark-mode .btn-secondary,
+#btn-close-modal-footer,
+.modal-footer .btn-secondary {
+    background-color: #1e1b4b !important;
+    color: #f3f4f6 !important;
+    border: 1.5px solid #312e81 !important;
+    padding: 0.65rem 1.5rem !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+}
+
+body.dark-mode .btn-secondary:hover,
+#btn-close-modal-footer:hover,
+.modal-footer .btn-secondary:hover {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary) !important;
+}
+
+/* ----------------------------------------------------
+   FEATURE 13: RESUME COMPARISON STYLES
+   ---------------------------------------------------- */
+.compare-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.compare-select-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+body.dark-mode .compare-select-card {
+    background: #12102e !important;
+    border-color: #24214d !important;
+}
+
+.compare-form-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.compare-dropdowns-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.75rem;
+}
+
+.compare-action-row {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+}
+
+.btn-lg {
+    padding: 0.85rem 2rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    min-height: 48px !important;
+}
+
+.btn-block {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+}
+
+.compare-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+.compare-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+body.dark-mode .compare-card {
+    background: #12102e !important;
+    border-color: #24214d !important;
+}
+
+.compare-card h5 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.compare-card .big-stat {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.diff-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.diff-badge.positive { background: #d1fae5; color: #047857; }
+.diff-badge.negative { background: #fee2e2; color: #b91c1c; }
+.diff-badge.neutral { background: #e0f2fe; color: #0369a1; }
+
+.added-skill-tag {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.removed-skill-tag {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* ----------------------------------------------------
+   FEATURE 14: AI COVER LETTER GENERATOR STYLES
+   ---------------------------------------------------- */
+.cover-letter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.cover-letter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+    gap: 1.75rem;
+    align-items: start;
+}
+
+.cover-form-card,
+.cover-output-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+body.dark-mode .cover-form-card,
+body.dark-mode .cover-output-card {
+    background: #12102e !important;
+    border-color: #24214d !important;
+}
+
+.card-title {
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
+    border-bottom: 1.5px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+body.dark-mode .card-title {
+    border-bottom-color: #24214d !important;
+}
+
+.cover-letter-paper {
+    background: #ffffff;
+    color: #1e293b;
+    border: 1.5px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2.2rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+    min-height: 380px;
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+body.dark-mode .cover-letter-paper {
+    background: #0d0b21 !important;
+    color: #f1f5f9 !important;
+    border-color: #312e81 !important;
+}
+
+.cover-letter-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+

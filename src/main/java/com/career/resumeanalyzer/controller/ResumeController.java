@@ -367,4 +367,59 @@ public class ResumeController {
         uploadedResumeRepository.delete(resume);
         return ResponseEntity.ok("Resume deleted successfully.");
     }
+
+    @PostMapping("/compare")
+    public ResponseEntity<?> compareResumes(@RequestBody JsonNode requestBody) {
+        if (requestBody == null || !requestBody.has("id1") || !requestBody.has("id2")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Missing id1 or id2 parameter.\"}");
+        }
+        Long id1 = requestBody.get("id1").asLong();
+        Long id2 = requestBody.get("id2").asLong();
+
+        Optional<UploadedResume> opt1 = uploadedResumeRepository.findById(id1);
+        Optional<UploadedResume> opt2 = uploadedResumeRepository.findById(id2);
+
+        if (opt1.isEmpty() || opt2.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"One or both resumes not found.\"}");
+        }
+
+        try {
+            UploadedResume r1 = opt1.get();
+            UploadedResume r2 = opt2.get();
+            String rawText1 = getOrExtractRawText(r1);
+            String rawText2 = getOrExtractRawText(r2);
+            String comparison = resumeAnalysisService.compareResumes(r1, rawText1, r2, rawText2);
+            return ResponseEntity.ok(comparison);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume files: " + e.getMessage() + "\"}");
+        }
+    }
+
+    @PostMapping("/cover-letter")
+    public ResponseEntity<?> generateCoverLetter(@RequestBody JsonNode requestBody) {
+        if (requestBody == null || !requestBody.has("resumeId")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Missing resumeId parameter.\"}");
+        }
+        Long id = requestBody.get("resumeId").asLong();
+        Optional<UploadedResume> opt = uploadedResumeRepository.findById(id);
+
+        if (opt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"Resume not found.\"}");
+        }
+
+        String companyName = requestBody.has("companyName") ? requestBody.get("companyName").asText() : "";
+        String jobRole = requestBody.has("jobRole") ? requestBody.get("jobRole").asText() : "";
+        String jobDescription = requestBody.has("jobDescription") ? requestBody.get("jobDescription").asText() : "";
+
+        try {
+            UploadedResume resume = opt.get();
+            String rawText = getOrExtractRawText(resume);
+            String result = resumeAnalysisService.generateCoverLetter(resume, rawText, companyName, jobRole, jobDescription);
+            return ResponseEntity.ok(result);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Failed to read resume file: " + e.getMessage() + "\"}");
+        }
+    }
 }

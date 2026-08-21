@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSearch();
     initUpload();
     initProfileActions();
+    initComparisonAndCoverLetter();
     loadProfile();
     loadResumes();
 });
@@ -56,7 +57,7 @@ function initRouting() {
             }
 
             // Custom tab actions
-            if (targetView === 'resumes') {
+            if (targetView === 'resumes' || targetView === 'compare' || targetView === 'cover-letter') {
                 loadResumes();
             } else if (targetView === 'profile') {
                 loadProfile();
@@ -113,6 +114,7 @@ async function loadResumes() {
         const searchInput = document.getElementById('top-search-input');
         const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
         updateResumesUI(query);
+        populateDropdowns();
         updateStats();
     } catch (err) {
         console.error(err);
@@ -1596,4 +1598,280 @@ function renderGrammarTab(data) {
     if (totalSentences) totalSentences.textContent = sentenceNode.totalSentences || 0;
     const flowRating = document.getElementById('grm-sentence-flow');
     if (flowRating) flowRating.textContent = sentenceNode.flowRating || '--';
+}
+
+// ----------------------------------------------------
+// FEATURE 13 & 14: DROPDOWNS, COMPARISON & COVER LETTER
+// ----------------------------------------------------
+function populateDropdowns() {
+    const v1Select = document.getElementById('compare-v1-select');
+    const v2Select = document.getElementById('compare-v2-select');
+    const clSelect = document.getElementById('cl-resume-select');
+
+    if (!state.resumes || state.resumes.length === 0) {
+        if (v1Select) v1Select.innerHTML = '<option value="">No uploaded resumes found</option>';
+        if (v2Select) v2Select.innerHTML = '<option value="">No uploaded resumes found</option>';
+        if (clSelect) clSelect.innerHTML = '<option value="">No uploaded resumes found</option>';
+        return;
+    }
+
+    const totalCount = state.resumes.length;
+
+    let optionsHtml = '<option value="">Select a resume version...</option>';
+    state.resumes.forEach((r, idx) => {
+        const versionNum = totalCount - idx;
+        const label = `${r.fileName} (v${versionNum}.0 - ${formatDate(r.uploadDate)})`;
+        optionsHtml += `<option value="${r.id}">${escapeHtml(label)}</option>`;
+    });
+
+    if (v1Select) {
+        const val1 = v1Select.value;
+        v1Select.innerHTML = optionsHtml;
+        if (val1) v1Select.value = val1;
+        else if (state.resumes.length >= 2) v1Select.value = state.resumes[state.resumes.length - 1].id;
+    }
+
+    if (v2Select) {
+        const val2 = v2Select.value;
+        v2Select.innerHTML = optionsHtml;
+        if (val2) v2Select.value = val2;
+        else if (state.resumes.length >= 1) v2Select.value = state.resumes[0].id;
+    }
+
+    if (clSelect) {
+        const valCl = clSelect.value;
+        clSelect.innerHTML = optionsHtml;
+        if (valCl) clSelect.value = valCl;
+        else if (state.resumes.length >= 1) clSelect.value = state.resumes[0].id;
+    }
+}
+
+function initComparisonAndCoverLetter() {
+    // 1. Run Comparison Event Listener
+    const btnCompare = document.getElementById('btn-run-comparison');
+    if (btnCompare) {
+        btnCompare.addEventListener('click', async () => {
+            const id1 = document.getElementById('compare-v1-select').value;
+            const id2 = document.getElementById('compare-v2-select').value;
+
+            if (!id1 || !id2) {
+                showNotification('Please select two resume versions to compare.', 'warning');
+                return;
+            }
+            if (id1 === id2) {
+                showNotification('Please select two DIFFERENT resume versions for comparison.', 'warning');
+                return;
+            }
+
+            btnCompare.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Comparing...';
+            btnCompare.disabled = true;
+
+            try {
+                const response = await fetch('/api/resumes/compare', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id1: parseInt(id1), id2: parseInt(id2) })
+                });
+
+                if (!response.ok) throw new Error('Comparison request failed');
+                const data = await response.json();
+                renderComparisonResults(data);
+                showNotification('Resume comparison complete!', 'success');
+            } catch (err) {
+                showNotification('Error comparing resumes: ' + err.message, 'danger');
+            } finally {
+                btnCompare.innerHTML = '<i class="fa-solid fa-scale-balanced"></i> Compare Versions';
+                btnCompare.disabled = false;
+            }
+        });
+    }
+
+    // 2. Generate Cover Letter Event Listener
+    const btnGenerateCL = document.getElementById('btn-generate-cover-letter');
+    if (btnGenerateCL) {
+        btnGenerateCL.addEventListener('click', async () => {
+            const resumeId = document.getElementById('cl-resume-select').value;
+            const companyName = document.getElementById('cl-company-name').value.trim();
+            const jobRole = document.getElementById('cl-job-role').value.trim();
+            const jobDescription = document.getElementById('cl-job-desc').value.trim();
+
+            if (!resumeId) {
+                showNotification('Please select a source resume.', 'warning');
+                return;
+            }
+
+            btnGenerateCL.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating Cover Letter...';
+            btnGenerateCL.disabled = true;
+
+            try {
+                const response = await fetch('/api/resumes/cover-letter', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        resumeId: parseInt(resumeId),
+                        companyName: companyName,
+                        jobRole: jobRole,
+                        jobDescription: jobDescription
+                    })
+                });
+
+                if (!response.ok) throw new Error('Cover letter generation failed');
+                const data = await response.json();
+                const outputEl = document.getElementById('cover-letter-output');
+                if (outputEl) {
+                    outputEl.textContent = data.coverLetter || 'No cover letter content generated.';
+                }
+                showNotification('AI Cover Letter generated successfully!', 'success');
+            } catch (err) {
+                showNotification('Error generating cover letter: ' + err.message, 'danger');
+            } finally {
+                btnGenerateCL.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Cover Letter';
+                btnGenerateCL.disabled = false;
+            }
+        });
+    }
+
+    // 3. Copy Cover Letter
+    const btnCopyCL = document.getElementById('btn-copy-cover-letter');
+    if (btnCopyCL) {
+        btnCopyCL.addEventListener('click', () => {
+            const text = document.getElementById('cover-letter-output').textContent;
+            if (!text || text.includes('Click "Generate AI Cover Letter"')) {
+                showNotification('Generate a cover letter first to copy.', 'warning');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Cover letter copied to clipboard!', 'info');
+            }).catch(err => {
+                showNotification('Failed to copy: ' + err.message, 'danger');
+            });
+        });
+    }
+
+    // 4. Download Cover Letter
+    const btnDownloadCL = document.getElementById('btn-download-cover-letter');
+    if (btnDownloadCL) {
+        btnDownloadCL.addEventListener('click', () => {
+            const text = document.getElementById('cover-letter-output').textContent;
+            if (!text || text.includes('Click "Generate AI Cover Letter"')) {
+                showNotification('Generate a cover letter first to download.', 'warning');
+                return;
+            }
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Cover_Letter.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showNotification('Cover Letter downloaded as text file!', 'info');
+        });
+    }
+}
+
+function renderComparisonResults(data) {
+    const container = document.getElementById('compare-results-container');
+    if (!container) return;
+
+    container.style.display = 'block';
+
+    const r1 = data.resume1 || {};
+    const r2 = data.resume2 || {};
+    const delta = data.atsScoreImprovement || 0;
+    const rate = data.improvementPercentage || 0;
+
+    // Delta Big Stat
+    const deltaEl = document.getElementById('cmp-ats-delta');
+    if (deltaEl) {
+        deltaEl.textContent = (delta >= 0 ? '+' : '') + delta + '%';
+        deltaEl.className = 'big-stat ' + (delta >= 0 ? 'text-green' : 'text-danger');
+    }
+
+    const detailEl = document.getElementById('cmp-ats-detail');
+    if (detailEl) {
+        detailEl.textContent = `${r1.fileName || 'Version 1'}: ${r1.atsScore || 0}% → ${r2.fileName || 'Version 2'}: ${r2.atsScore || 0}%`;
+    }
+
+    // Rate Big Stat
+    const rateEl = document.getElementById('cmp-improvement-rate');
+    if (rateEl) {
+        rateEl.textContent = (rate >= 0 ? '+' : '') + rate + '%';
+        rateEl.className = 'big-stat ' + (rate >= 0 ? 'text-green' : 'text-danger');
+    }
+
+    // Added Skills
+    const addedSkills = data.addedSkills || [];
+    const addedSkillsContainer = document.getElementById('cmp-added-skills-container');
+    if (addedSkillsContainer) {
+        addedSkillsContainer.innerHTML = '';
+        if (addedSkills.length > 0) {
+            addedSkills.forEach(s => {
+                const span = document.createElement('span');
+                span.className = 'added-skill-tag';
+                span.textContent = '+ ' + s;
+                addedSkillsContainer.appendChild(span);
+            });
+        } else {
+            addedSkillsContainer.innerHTML = '<span class="text-muted small">No new skills added in comparison version.</span>';
+        }
+    }
+
+    // Skill Growth Big Stat
+    const growthEl = document.getElementById('cmp-skill-growth');
+    if (growthEl) {
+        growthEl.textContent = `+${addedSkills.length} Skills`;
+    }
+
+    // Removed Skills
+    const removedSkills = data.removedSkills || [];
+    const removedSkillsContainer = document.getElementById('cmp-removed-skills-container');
+    if (removedSkillsContainer) {
+        removedSkillsContainer.innerHTML = '';
+        if (removedSkills.length > 0) {
+            removedSkills.forEach(s => {
+                const span = document.createElement('span');
+                span.className = 'removed-skill-tag';
+                span.textContent = '- ' + s;
+                removedSkillsContainer.appendChild(span);
+            });
+        } else {
+            removedSkillsContainer.innerHTML = '<span class="text-muted small">No skills removed or omitted.</span>';
+        }
+    }
+
+    // Added Keywords
+    const addedKw = data.addedKeywords || [];
+    const addedKwContainer = document.getElementById('cmp-added-keywords-container');
+    if (addedKwContainer) {
+        addedKwContainer.innerHTML = '';
+        if (addedKw.length > 0) {
+            addedKw.forEach(k => {
+                const span = document.createElement('span');
+                span.className = 'added-skill-tag';
+                span.textContent = '+ ' + k;
+                addedKwContainer.appendChild(span);
+            });
+        } else {
+            addedKwContainer.innerHTML = '<span class="text-muted small">No new keywords detected.</span>';
+        }
+    }
+
+    // Removed Keywords
+    const removedKw = data.removedKeywords || [];
+    const removedKwContainer = document.getElementById('cmp-removed-keywords-container');
+    if (removedKwContainer) {
+        removedKwContainer.innerHTML = '';
+        if (removedKw.length > 0) {
+            removedKw.forEach(k => {
+                const span = document.createElement('span');
+                span.className = 'removed-skill-tag';
+                span.textContent = '- ' + k;
+                removedKwContainer.appendChild(span);
+            });
+        } else {
+            removedKwContainer.innerHTML = '<span class="text-muted small">No keywords removed.</span>';
+        }
+    }
 }

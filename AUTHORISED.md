@@ -90,3 +90,36 @@ This log tracks all architectural and design changes authorized and implemented 
 - **Download Previous Reports**:
   - **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Added `GET /api/resumes/{id}/download-report/{type}` (`strength`, `grammar`, `ats`, `ai`).
   - **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Added Download Report buttons in both the modal footer and the history table action column.
+
+---
+
+## 🎨 Phase 6: Full-Screen Report Modal & Dark Theme Contrast Adjustments
+
+### 1. Full-Screen Report Modal
+- **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**: Expanded `.modal-container` to `width: 95vw; max-width: 1400px; height: 92vh;` covering almost the full screen with generous padding and smooth scrollable content.
+
+### 2. Dark Mode Theme Contrast Adjustments
+- **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**:
+  - Fixed Close Report button (`#btn-close-modal-footer`) in modal footer by overriding `body.dark-mode .btn-secondary` (`background-color: #1c1945; color: #f3f4f6; border: 1px solid #24214d;`).
+  - Fixed dark mode table contrast: `body.dark-mode .data-table th` (`#0d0b21`), `td` (`#f3f4f6`), `tbody tr` (`#12102e`), and `tbody tr:hover` (`#19173f`), eliminating white background boxes.
+  - Adjusted `.btn-outline` and `.btn-danger-icon` dark theme contrast.
+
+---
+
+## ⚡ Phase 7: Resume Comparison & AI Cover Letter Generator
+
+### 1. Feature 13: Resume Comparison
+- **[ResumeAnalysisService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/ResumeAnalysisService.java)**: Added `compareResumes(r1, rawText1, r2, rawText2)` computing:
+  - **ATS Score Delta**: Score improvement from Version 1 to Version 2.
+  - **Added Skills**: Skills present in Version 2 but missing in Version 1.
+  - **Removed Skills**: Skills present in Version 1 but absent in Version 2.
+  - **Keyword Difference**: New keywords identified vs removed keywords.
+  - **Improvement Percentage**: Overall optimization rate.
+- **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Exposed `POST /api/resumes/compare`.
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Created `#view-compare` and sidebar link `Resume Comparison`. Added version dropdown selectors and `renderComparisonResults(data)`.
+
+### 2. Feature 14: AI Cover Letter Generator
+- **[ResumeAnalysisService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/ResumeAnalysisService.java)**: Added `generateCoverLetter(resume, rawText, companyName, jobRole, jdText)` generating a tailored professional cover letter document based on candidate profile, target company, job role, and JD requirements.
+- **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Exposed `POST /api/resumes/cover-letter`.
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Created `#view-cover-letter` and sidebar link `Cover Letter AI`. Implemented submission handler, copy-to-clipboard handler, and text file download handler.
+

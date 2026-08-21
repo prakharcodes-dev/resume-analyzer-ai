@@ -11,7 +11,7 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom Style -->
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/styles.css?v=20260818_v6">
 </head>
 <body>
     <div class="app-container">
@@ -32,6 +32,14 @@
                 <a href="#resumes" class="nav-item" data-view="resumes">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span>Resume History</span>
+                </a>
+                <a href="#compare" class="nav-item" data-view="compare">
+                    <i class="fa-solid fa-code-compare"></i>
+                    <span>Resume Comparison</span>
+                </a>
+                <a href="#cover-letter" class="nav-item" data-view="cover-letter">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                    <span>Cover Letter AI</span>
                 </a>
                 <a href="#profile" class="nav-item" data-view="profile">
                     <i class="fa-solid fa-user-tie"></i>
@@ -287,6 +295,173 @@
                             </div>
                             <div class="projects-list" id="profile-projects-container">
                                 <!-- Dynamic project cards -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resume Comparison View -->
+            <section id="view-compare" class="content-view">
+                <div class="view-header flex-header mb-4">
+                    <div>
+                        <h2><i class="fa-solid fa-code-compare text-purple mr-2"></i> Resume Version Comparison</h2>
+                        <p class="text-muted">Compare two resume versions side-by-side to evaluate ATS improvements, added skills, removed skills, and keyword differences.</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="document.getElementById('file-input').click();">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload New Resume
+                    </button>
+                </div>
+
+                <div class="compare-container">
+                    <div class="compare-select-card">
+                        <div class="compare-form-layout">
+                            <div class="compare-dropdowns-grid">
+                                <div class="form-group-card">
+                                    <label for="compare-v1-select" class="form-label">
+                                        <i class="fa-solid fa-file-arrow-up text-cyan"></i> Select Baseline Version (Version 1)
+                                    </label>
+                                    <select id="compare-v1-select" class="form-control form-select-lg">
+                                        <option value="">Select Baseline Resume...</option>
+                                    </select>
+                                    <small class="form-hint">Choose your older or initial resume draft</small>
+                                </div>
+
+                                <div class="form-group-card">
+                                    <label for="compare-v2-select" class="form-label">
+                                        <i class="fa-solid fa-file-circle-check text-green"></i> Select Comparison Version (Version 2)
+                                    </label>
+                                    <select id="compare-v2-select" class="form-control form-select-lg">
+                                        <option value="">Select Revised Resume...</option>
+                                    </select>
+                                    <small class="form-hint">Choose your updated or newer resume version</small>
+                                </div>
+                            </div>
+
+                            <div class="compare-action-row">
+                                <button class="btn btn-primary btn-lg" id="btn-run-comparison">
+                                    <i class="fa-solid fa-scale-balanced"></i> Compare Resume Versions
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Results -->
+                    <div id="compare-results-container" style="display: none;" class="mt-4">
+                        <div class="compare-metrics-grid">
+                            <div class="compare-card">
+                                <h5><i class="fa-solid fa-gauge-high text-cyan"></i> ATS Score Delta</h5>
+                                <div class="big-stat" id="cmp-ats-delta">+0%</div>
+                                <p class="text-muted small" id="cmp-ats-detail">Baseline: 0% → New: 0%</p>
+                            </div>
+                            <div class="compare-card">
+                                <h5><i class="fa-solid fa-chart-line text-green"></i> Improvement Rate</h5>
+                                <div class="big-stat" id="cmp-improvement-rate">0%</div>
+                                <p class="text-muted small">Overall optimization score growth</p>
+                            </div>
+                            <div class="compare-card">
+                                <h5><i class="fa-solid fa-layer-group text-purple"></i> Skill Growth</h5>
+                                <div class="big-stat" id="cmp-skill-growth">+0 Skills</div>
+                                <p class="text-muted small" id="cmp-skill-detail">Added & refined technical skills</p>
+                            </div>
+                        </div>
+
+                        <div class="analysis-sections-grid mt-4">
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-circle-plus text-success"></i> Added Skills in Version 2</h5>
+                                <div class="report-skills-tags mt-2" id="cmp-added-skills-container">
+                                    <span class="text-muted small">Select versions to compare</span>
+                                </div>
+                            </div>
+
+                            <div class="analysis-detail-card">
+                                <h5><i class="fa-solid fa-circle-minus text-danger"></i> Removed / Omitted Skills</h5>
+                                <div class="report-skills-tags mt-2" id="cmp-removed-skills-container">
+                                    <span class="text-muted small">Select versions to compare</span>
+                                </div>
+                            </div>
+
+                            <div class="analysis-detail-card full-width-card">
+                                <h5><i class="fa-solid fa-key text-warning"></i> Keyword Differences & Additions</h5>
+                                <div class="details-grid mt-2">
+                                    <div>
+                                        <h6 class="text-success mb-2"><i class="fa-solid fa-plus mr-1"></i> New Keywords Identified:</h6>
+                                        <div class="report-skills-tags" id="cmp-added-keywords-container"></div>
+                                    </div>
+                                    <div>
+                                        <h6 class="text-danger mb-2"><i class="fa-solid fa-minus mr-1"></i> Removed Keywords:</h6>
+                                        <div class="report-skills-tags" id="cmp-removed-keywords-container"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cover Letter AI View -->
+            <section id="view-cover-letter" class="content-view">
+                <div class="view-header flex-header mb-4">
+                    <div>
+                        <h2><i class="fa-solid fa-envelope-open-text text-purple mr-2"></i> AI Cover Letter Generator</h2>
+                        <p class="text-muted">Generate a tailored, high-converting professional cover letter aligned with your resume, target company, and job description.</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="document.getElementById('file-input').click();">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload New Resume
+                    </button>
+                </div>
+
+                <div class="cover-letter-container">
+                    <div class="cover-letter-grid">
+                        <div class="cover-form-card">
+                            <h4 class="card-title mb-3"><i class="fa-solid fa-sliders text-primary"></i> Application Parameters</h4>
+                            
+                            <div class="form-group-card mb-3">
+                                <label for="cl-resume-select" class="form-label">
+                                    <i class="fa-solid fa-file-pdf text-purple"></i> Select Source Resume
+                                </label>
+                                <select id="cl-resume-select" class="form-control form-select-lg">
+                                    <option value="">Select an uploaded resume...</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group-card mb-3">
+                                <label for="cl-company-name" class="form-label">
+                                    <i class="fa-solid fa-building text-cyan"></i> Target Company Name
+                                </label>
+                                <input type="text" id="cl-company-name" placeholder="E.g. Google, Microsoft, Amazon" class="form-control form-input-lg">
+                            </div>
+
+                            <div class="form-group-card mb-3">
+                                <label for="cl-job-role" class="form-label">
+                                    <i class="fa-solid fa-briefcase text-green"></i> Job Role / Position Title
+                                </label>
+                                <input type="text" id="cl-job-role" placeholder="E.g. Senior Software Engineer" class="form-control form-input-lg">
+                            </div>
+
+                            <div class="form-group-card mb-4">
+                                <label for="cl-job-desc" class="form-label">
+                                    <i class="fa-solid fa-file-lines text-warning"></i> Target Job Description (Optional)
+                                </label>
+                                <textarea id="cl-job-desc" rows="6" placeholder="Paste job description text here to align cover letter keywords and technical requirements..." class="form-control form-textarea-lg"></textarea>
+                            </div>
+
+                            <button class="btn btn-primary btn-lg btn-block" id="btn-generate-cover-letter">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Cover Letter
+                            </button>
+                        </div>
+
+                        <!-- Output Paper Card -->
+                        <div class="cover-output-card">
+                            <h4 class="card-title mb-3"><i class="fa-solid fa-file-contract text-success"></i> Generated Cover Letter Document</h4>
+                            <div class="cover-letter-paper" id="cover-letter-output">Click "Generate AI Cover Letter" to craft your tailored application document...</div>
+                            <div class="cover-letter-actions mt-3">
+                                <button class="btn btn-outline" id="btn-copy-cover-letter">
+                                    <i class="fa-solid fa-copy"></i> Copy to Clipboard
+                                </button>
+                                <button class="btn btn-secondary" id="btn-download-cover-letter">
+                                    <i class="fa-solid fa-download"></i> Download Cover Letter
+                                </button>
                             </div>
                         </div>
                     </div>
