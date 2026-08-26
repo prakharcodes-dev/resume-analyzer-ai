@@ -1,0 +1,6 @@
+target/
+.git/
+.gitignore
+uploads/
+*.mv.db
+*.trace.db
