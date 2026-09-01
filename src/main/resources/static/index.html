@@ -41,6 +41,18 @@
                     <i class="fa-solid fa-envelope-open-text"></i>
                     <span>Cover Letter AI</span>
                 </a>
+                <a href="#templates" class="nav-item" data-view="templates">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>Resume Templates</span>
+                </a>
+                <a href="#linkedin" class="nav-item" data-view="linkedin">
+                    <i class="fa-brands fa-linkedin"></i>
+                    <span>LinkedIn Analyzer</span>
+                </a>
+                <a href="#github" class="nav-item" data-view="github">
+                    <i class="fa-brands fa-github"></i>
+                    <span>GitHub Analyzer</span>
+                </a>
                 <a href="#profile" class="nav-item" data-view="profile">
                     <i class="fa-solid fa-user-tie"></i>
                     <span>Career Profile</span>
@@ -463,6 +475,239 @@
                                     <i class="fa-solid fa-download"></i> Download Cover Letter
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resume Templates View -->
+            <section id="view-templates" class="content-view">
+                <div class="view-header flex-header mb-4">
+                    <div>
+                        <h2><i class="fa-solid fa-file-invoice text-purple mr-2"></i> Resume Templates & Visual Builder</h2>
+                        <p class="text-muted">Generate and preview your resume in 5 distinct professional layouts. Select a template below to render live.</p>
+                    </div>
+                    <div class="tmpl-action-header-buttons">
+                        <button class="btn btn-outline" id="btn-tmpl-print">
+                            <i class="fa-solid fa-print"></i> Print / Save PDF
+                        </button>
+                        <button class="btn btn-secondary" id="btn-tmpl-export-html">
+                            <i class="fa-solid fa-file-code"></i> Export HTML
+                        </button>
+                        <button class="btn btn-primary" id="btn-tmpl-copy-text">
+                            <i class="fa-solid fa-copy"></i> Copy Text
+                        </button>
+                    </div>
+                </div>
+
+                <div class="templates-container">
+                    <!-- Source Resume & Controls -->
+                    <div class="tmpl-controls-card mb-4">
+                        <div class="form-group-card">
+                            <label for="tmpl-source-select" class="form-label">
+                                <i class="fa-solid fa-database text-cyan"></i> Select Resume Data Source
+                            </label>
+                            <select id="tmpl-source-select" class="form-control form-select-lg">
+                                <option value="profile">Use Active Career Profile Data</option>
+                            </select>
+                            <small class="form-hint">Choose whether to render from your active career profile or an uploaded resume version</small>
+                        </div>
+                    </div>
+
+                    <!-- Template Selector Grid (5 Cards) -->
+                    <div class="template-selector-grid mb-4">
+                        <div class="template-card active" data-template="ats">
+                            <div class="tmpl-badge">ATS Optimized</div>
+                            <div class="tmpl-icon"><i class="fa-solid fa-file-lines text-primary"></i></div>
+                            <h4>ATS Friendly</h4>
+                            <p>Simple single-column layout optimized for ATS parsers.</p>
+                        </div>
+                        <div class="template-card" data-template="professional">
+                            <div class="tmpl-badge">Executive</div>
+                            <div class="tmpl-icon"><i class="fa-solid fa-briefcase text-slate"></i></div>
+                            <h4>Professional</h4>
+                            <p>Clean corporate design with strong typography & dividers.</p>
+                        </div>
+                        <div class="template-card" data-template="modern">
+                            <div class="tmpl-badge">Popular</div>
+                            <div class="tmpl-icon"><i class="fa-solid fa-wand-magic-sparkles text-indigo"></i></div>
+                            <h4>Modern Polished</h4>
+                            <p>Modern visual hierarchy with indigo accents and skill tags.</p>
+                        </div>
+                        <div class="template-card" data-template="minimal">
+                            <div class="tmpl-badge">Clean & Simple</div>
+                            <div class="tmpl-icon"><i class="fa-solid fa-feather text-gray"></i></div>
+                            <h4>Minimalist</h4>
+                            <p>Generous whitespace, ultra-clean focus on content.</p>
+                        </div>
+                        <div class="template-card" data-template="creative">
+                            <div class="tmpl-badge">Visual & Tech</div>
+                            <div class="tmpl-icon"><i class="fa-solid fa-palette text-purple"></i></div>
+                            <h4>Creative Portfolio</h4>
+                            <p>Vibrant dual-column layout with dark skills sidebar.</p>
+                        </div>
+                    </div>
+
+                    <!-- Live Template Preview Paper Container -->
+                    <div class="tmpl-preview-wrapper">
+                        <div class="tmpl-preview-header">
+                            <h5><i class="fa-solid fa-eye text-cyan"></i> Live Template Preview</h5>
+                            <span class="badge badge-purple" id="tmpl-active-badge">ATS Friendly Resume</span>
+                        </div>
+                        <div class="tmpl-paper-container" id="tmpl-preview-canvas">
+                            <div class="text-center p-5 text-muted">Loading template preview...</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- LinkedIn Profile Analyzer View -->
+            <section id="view-linkedin" class="content-view">
+                <div class="view-header flex-header mb-4">
+                    <div>
+                        <h2><i class="fa-brands fa-linkedin text-cyan mr-2"></i> LinkedIn Profile Analyzer</h2>
+                        <p class="text-muted">Audit your LinkedIn profile positioning, headline, about section, skills density, and experience metrics to attract top recruiters.</p>
+                    </div>
+                    <button class="btn btn-outline" id="btn-linkedin-autofill">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-fill from Profile
+                    </button>
+                </div>
+
+                <div class="linkedin-container">
+                    <div class="linkedin-form-card mb-4">
+                        <h4 class="card-title mb-3"><i class="fa-solid fa-sliders text-primary"></i> LinkedIn Profile Parameters</h4>
+                        
+                        <div class="compare-dropdowns-grid mb-3">
+                            <div class="form-group-card">
+                                <label for="li-target-role" class="form-label"><i class="fa-solid fa-briefcase text-green"></i> Target Career Role</label>
+                                <input type="text" id="li-target-role" placeholder="E.g. Senior Software Engineer, AI Specialist" class="form-control form-input-lg">
+                            </div>
+                            <div class="form-group-card">
+                                <label for="li-profile-url" class="form-label"><i class="fa-brands fa-linkedin text-cyan"></i> LinkedIn Profile URL (Optional)</label>
+                                <input type="text" id="li-profile-url" placeholder="https://linkedin.com/in/username" class="form-control form-input-lg">
+                            </div>
+                        </div>
+
+                        <div class="form-group-card mb-3">
+                            <label for="li-headline" class="form-label"><i class="fa-solid fa-heading text-purple"></i> Profile Headline</label>
+                            <input type="text" id="li-headline" placeholder="E.g. Full Stack Developer | Java, Spring Boot, React | Building Scalable Cloud Apps" class="form-control form-input-lg">
+                        </div>
+
+                        <div class="form-group-card mb-3">
+                            <label for="li-about" class="form-label"><i class="fa-solid fa-align-left text-warning"></i> About / Summary Section</label>
+                            <textarea id="li-about" rows="5" placeholder="Paste your LinkedIn About section summary here..." class="form-control form-textarea-lg"></textarea>
+                        </div>
+
+                        <div class="compare-dropdowns-grid mb-3">
+                            <div class="form-group-card">
+                                <label for="li-skills" class="form-label"><i class="fa-solid fa-layer-group text-primary"></i> Endorsed Skills</label>
+                                <textarea id="li-skills" rows="3" placeholder="Java, Python, Spring Boot, Docker, SQL..." class="form-control form-textarea-lg"></textarea>
+                            </div>
+                            <div class="form-group-card">
+                                <label for="li-certs" class="form-label"><i class="fa-solid fa-certificate text-warning"></i> Certifications & Licenses</label>
+                                <textarea id="li-certs" rows="3" placeholder="AWS Certified Developer, Oracle Java SE..." class="form-control form-textarea-lg"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-group-card mb-4">
+                            <label for="li-experience" class="form-label"><i class="fa-solid fa-building text-success"></i> Work Experience & Impact Bullet Points</label>
+                            <textarea id="li-experience" rows="4" placeholder="Paste key accomplishments or job description highlights..." class="form-control form-textarea-lg"></textarea>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg btn-block" id="btn-run-linkedin-analysis">
+                            <i class="fa-solid fa-chart-pie"></i> Run LinkedIn Profile Audit
+                        </button>
+                    </div>
+
+                    <!-- Analysis Output Container -->
+                    <div id="linkedin-results-container" style="display: none;" class="mt-4">
+                        <div class="overall-score-banner mb-4">
+                            <div class="score-dial">
+                                <span class="score-number" id="li-overall-score">0</span>
+                                <span class="score-label">/ 100</span>
+                            </div>
+                            <div class="score-banner-text">
+                                <h3 id="li-score-grade">A / Outstanding LinkedIn Profile</h3>
+                                <p id="li-score-sub">Your LinkedIn profile structure and key positioning metrics evaluated against recruiter algorithms.</p>
+                            </div>
+                        </div>
+
+                        <!-- Category Breakdown Cards Grid -->
+                        <div class="categories-grid mb-4" id="li-categories-grid"></div>
+
+                        <!-- Identified Problems -->
+                        <div class="analysis-detail-card mb-4">
+                            <h5><i class="fa-solid fa-triangle-exclamation text-danger"></i> Profile Weaknesses & Missing Details</h5>
+                            <div class="issues-list mt-3" id="li-problems-list"></div>
+                        </div>
+
+                        <!-- Actionable Suggestions -->
+                        <div class="analysis-detail-card">
+                            <h5><i class="fa-solid fa-lightbulb text-warning"></i> Actionable Profile Optimization Plan</h5>
+                            <div class="suggestions-list mt-3" id="li-suggestions-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- GitHub Profile Analyzer View -->
+            <section id="view-github" class="content-view">
+                <div class="view-header flex-header mb-4">
+                    <div>
+                        <h2><i class="fa-brands fa-github text-purple mr-2"></i> GitHub Profile Analyzer</h2>
+                        <p class="text-muted">Analyze your public repositories, tech stack diversity, commit activity, stars, and documentation quality to build a top-tier developer portfolio.</p>
+                    </div>
+                </div>
+
+                <div class="github-container">
+                    <div class="github-form-card mb-4">
+                        <h4 class="card-title mb-3"><i class="fa-brands fa-github text-primary"></i> GitHub Profile Parameters</h4>
+                        
+                        <div class="compare-dropdowns-grid mb-3">
+                            <div class="form-group-card">
+                                <label for="gh-username" class="form-label"><i class="fa-solid fa-user text-cyan"></i> GitHub Username or Profile URL</label>
+                                <input type="text" id="gh-username" placeholder="E.g. octocat or https://github.com/octocat" class="form-control form-input-lg">
+                            </div>
+                            <div class="form-group-card">
+                                <label for="gh-target-role" class="form-label"><i class="fa-solid fa-briefcase text-green"></i> Target Engineering Role</label>
+                                <input type="text" id="gh-target-role" placeholder="E.g. Full Stack Engineer, Backend Specialist" class="form-control form-input-lg">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-lg btn-block" id="btn-run-github-analysis">
+                            <i class="fa-brands fa-github-alt"></i> Audit GitHub Developer Profile
+                        </button>
+                    </div>
+
+                    <!-- Analysis Output Container -->
+                    <div id="github-results-container" style="display: none;" class="mt-4">
+                        <!-- Stats Header Banner -->
+                        <div class="github-profile-header-card mb-4" id="gh-user-banner"></div>
+
+                        <div class="overall-score-banner mb-4">
+                            <div class="score-dial">
+                                <span class="score-number" id="gh-overall-score">0</span>
+                                <span class="score-label">/ 100</span>
+                            </div>
+                            <div class="score-banner-text">
+                                <h3 id="gh-score-grade">A+ / Exceptional Developer Profile</h3>
+                                <p id="gh-score-sub">Repository quality, language diversity, commit patterns, and project documentation audit.</p>
+                            </div>
+                        </div>
+
+                        <!-- Category Breakdown Cards Grid -->
+                        <div class="categories-grid mb-4" id="gh-categories-grid"></div>
+
+                        <!-- Identified Problems -->
+                        <div class="analysis-detail-card mb-4">
+                            <h5><i class="fa-solid fa-circle-exclamation text-danger"></i> Repository & Documentation Issues</h5>
+                            <div class="issues-list mt-3" id="gh-problems-list"></div>
+                        </div>
+
+                        <!-- Actionable Suggestions -->
+                        <div class="analysis-detail-card">
+                            <h5><i class="fa-solid fa-rocket text-success"></i> Actionable Developer Recommendations</h5>
+                            <div class="suggestions-list mt-3" id="gh-suggestions-list"></div>
                         </div>
                     </div>
                 </div>

@@ -68,11 +68,27 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
   - **Keyword Difference**: New keywords identified vs removed keywords.
   - **Improvement Rate**: Overall optimization score growth percentage.
 
-### 📝 10. AI Cover Letter Generator (Feature 14)
-- Tailored cover letter generator based on: Selected Resume, Target Company Name, Job Role, and Job Description.
-- Outputs formatted, personalized application document with:
-  - Copy to Clipboard.
-  - Download as `.txt` file.
+### 🎨 11. Resume Templates (Feature 17)
+- Generate & preview resumes in **5 distinct professional layouts**:
+  1. **ATS Friendly Resume**: Simple single-column layout optimized for ATS parsing.
+  2. **Professional Resume**: Corporate-style design with strong section hierarchy.
+  3. **Modern Resume**: Modern visual hierarchy with subtle accents & skill badges.
+  4. **Minimal Resume**: Clean whitespace layout focusing on pure content.
+  5. **Creative Resume**: Vibrant dual-column layout with dark sidebar for tech & creative profiles.
+- Switch between templates live without losing resume data.
+- Export as standalone HTML, copy formatted text, or print to PDF.
+
+### 💼 12. LinkedIn Profile Analyzer (Feature 18)
+- Comprehensive LinkedIn audit analyzing Profile Completeness, Headline positioning, About section, Skills density, Experience metrics, and Certifications.
+- Calculates **LinkedIn Score out of 100** with category breakdown.
+- Provides actionable, highly specific improvement suggestions (e.g., headline keyword additions, metric formatting).
+
+### 🐙 13. GitHub Profile Analyzer (Feature 19)
+- Integrates with live GitHub REST API v3 to retrieve repositories, languages, stars, forks, and followers.
+- Evaluates Repository Quality, Programming Language diversity, Commit Activity, Contribution Impact, and Documentation Quality.
+- Calculates **GitHub Score out of 100** with category breakdown.
+- Graceful API rate-limit and offline fallback handling.
+- Provides tailored recommendations (e.g. adding READMEs, pinning top 4-6 projects, adding demo links, archiving test repos).
 
 ---
 
@@ -106,6 +122,10 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 | `POST` | `/api/resumes/{id}/match` | Compare resume against a target Job Description |
 | `POST` | `/api/resumes/compare` | Compare two resume versions side-by-side |
 | `POST` | `/api/resumes/cover-letter` | Generate AI Cover Letter tailored to company & role |
+| `GET` | `/api/templates` | Get list of available 5 resume templates |
+| `POST` | `/api/templates/render` | Render resume template HTML preview |
+| `POST` | `/api/analyzer/linkedin` | Audit LinkedIn profile payload & generate score + suggestions |
+| `POST` | `/api/analyzer/github` | Audit GitHub profile via REST API & generate score + recommendations |
 | `DELETE` | `/api/resumes/{id}` | Delete resume record and stored local file |
 | `GET` | `/api/profile` | Get active user profile |
 | `PUT` | `/api/profile` | Update active user profile details |
@@ -143,6 +163,6 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 
 ## 📊 Project Status
 
-- **Current Status**: **Phase 7 Completed**
-- **Offline Engine**: 100% functional (No external API keys required).
-- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, Dark Mode Theme Fixes, **Resume Comparison (Feature 13)**, and **AI Cover Letter Generator (Feature 14)**.
+- **Current Status**: **Phase 8 Completed**
+- **Offline Engine**: 100% functional.
+- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, **Resume Comparison (Feature 13)**, **AI Cover Letter Generator (Feature 14)**, **Resume Templates (Feature 17)**, **LinkedIn Profile Analyzer (Feature 18)**, and **GitHub Profile Analyzer (Feature 19)**.

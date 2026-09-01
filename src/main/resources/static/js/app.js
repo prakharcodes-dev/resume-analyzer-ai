@@ -15,7 +15,9 @@ const state = {
         experience: '[]',
         projects: '[]'
     },
-    resumes: []
+    resumes: [],
+    activeTemplate: 'ats',
+    selectedTmplSource: 'profile'
 };
 
 // ----------------------------------------------------
@@ -28,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initUpload();
     initProfileActions();
     initComparisonAndCoverLetter();
+    initTemplates();
+    initLinkedInAnalyzer();
+    initGitHubAnalyzer();
     loadProfile();
     loadResumes();
 });
@@ -57,10 +62,15 @@ function initRouting() {
             }
 
             // Custom tab actions
-            if (targetView === 'resumes' || targetView === 'compare' || targetView === 'cover-letter') {
+            if (targetView === 'resumes' || targetView === 'compare' || targetView === 'cover-letter' || targetView === 'templates') {
                 loadResumes();
+                if (targetView === 'templates') renderTemplatePreview();
             } else if (targetView === 'profile') {
                 loadProfile();
+            } else if (targetView === 'linkedin') {
+                autoFillLinkedInForm(false);
+            } else if (targetView === 'github') {
+                autoFillGitHubForm(false);
             }
         });
     });
@@ -1617,11 +1627,16 @@ function populateDropdowns() {
 
     const totalCount = state.resumes.length;
 
+    const tmplSelect = document.getElementById('tmpl-source-select');
+
     let optionsHtml = '<option value="">Select a resume version...</option>';
+    let tmplOptionsHtml = '<option value="profile">Use Active Career Profile Data</option>';
+
     state.resumes.forEach((r, idx) => {
         const versionNum = totalCount - idx;
         const label = `${r.fileName} (v${versionNum}.0 - ${formatDate(r.uploadDate)})`;
         optionsHtml += `<option value="${r.id}">${escapeHtml(label)}</option>`;
+        tmplOptionsHtml += `<option value="${r.id}">Uploaded Resume: ${escapeHtml(label)}</option>`;
     });
 
     if (v1Select) {
@@ -1643,6 +1658,12 @@ function populateDropdowns() {
         clSelect.innerHTML = optionsHtml;
         if (valCl) clSelect.value = valCl;
         else if (state.resumes.length >= 1) clSelect.value = state.resumes[0].id;
+    }
+
+    if (tmplSelect) {
+        const valTmpl = tmplSelect.value;
+        tmplSelect.innerHTML = tmplOptionsHtml;
+        if (valTmpl) tmplSelect.value = valTmpl;
     }
 }
 
@@ -1873,5 +1894,420 @@ function renderComparisonResults(data) {
         } else {
             removedKwContainer.innerHTML = '<span class="text-muted small">No keywords removed.</span>';
         }
+    }
+}
+
+// ----------------------------------------------------
+// FEATURE 17: RESUME TEMPLATES FUNCTIONALITY
+// ----------------------------------------------------
+function initTemplates() {
+    const tmplCards = document.querySelectorAll('.template-card');
+    tmplCards.forEach(card => {
+        card.addEventListener('click', () => {
+            tmplCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+            const tmplId = card.getAttribute('data-template');
+            state.activeTemplate = tmplId;
+
+            const badgeMap = {
+                ats: 'ATS Friendly Resume',
+                professional: 'Professional Corporate Resume',
+                modern: 'Modern Polished Resume',
+                minimal: 'Minimalist Clean Resume',
+                creative: 'Creative Portfolio Resume'
+            };
+            const badgeEl = document.getElementById('tmpl-active-badge');
+            if (badgeEl) badgeEl.textContent = badgeMap[tmplId] || 'Resume Template';
+
+            renderTemplatePreview();
+        });
+    });
+
+    const tmplSelect = document.getElementById('tmpl-source-select');
+    if (tmplSelect) {
+        tmplSelect.addEventListener('change', (e) => {
+            state.selectedTmplSource = e.target.value;
+            renderTemplatePreview();
+        });
+    }
+
+    const btnPrint = document.getElementById('btn-tmpl-print');
+    if (btnPrint) {
+        btnPrint.addEventListener('click', () => {
+            window.print();
+        });
+    }
+
+    const btnExportHtml = document.getElementById('btn-tmpl-export-html');
+    if (btnExportHtml) {
+        btnExportHtml.addEventListener('click', () => {
+            const canvas = document.getElementById('tmpl-preview-canvas');
+            if (!canvas) return;
+            const content = canvas.innerHTML;
+            const fullDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Resume Export</title></head><body>${content}</body></html>`;
+            const blob = new Blob([fullDoc], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Resume_${state.activeTemplate}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Resume HTML exported successfully!', 'success');
+        });
+    }
+
+    const btnCopyText = document.getElementById('btn-tmpl-copy-text');
+    if (btnCopyText) {
+        btnCopyText.addEventListener('click', () => {
+            const canvas = document.getElementById('tmpl-preview-canvas');
+            if (!canvas) return;
+            const text = canvas.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Resume text copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Failed to copy text.', 'danger');
+            });
+        });
+    }
+}
+
+async function renderTemplatePreview() {
+    const canvas = document.getElementById('tmpl-preview-canvas');
+    if (!canvas) return;
+
+    canvas.innerHTML = '<div class="text-center p-5 text-muted"><i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i><br>Rendering Resume Template...</div>';
+
+    try {
+        const payload = {
+            templateId: state.activeTemplate,
+            resumeId: (state.selectedTmplSource && state.selectedTmplSource !== 'profile') ? parseInt(state.selectedTmplSource) : null
+        };
+
+        const response = await fetch('/api/templates/render', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Failed to render template');
+        const data = await response.json();
+
+        if (data && data.html) {
+            canvas.innerHTML = data.html;
+        } else {
+            canvas.innerHTML = '<div class="alert alert-danger">Error rendering template content.</div>';
+        }
+    } catch (err) {
+        console.error(err);
+        canvas.innerHTML = '<div class="text-center p-5 text-muted">Error loading template preview. Please ensure backend server is running.</div>';
+    }
+}
+
+// ----------------------------------------------------
+// FEATURE 18: LINKEDIN PROFILE ANALYZER FUNCTIONALITY
+// ----------------------------------------------------
+function initLinkedInAnalyzer() {
+    const btnAutofill = document.getElementById('btn-linkedin-autofill');
+    if (btnAutofill) {
+        btnAutofill.addEventListener('click', () => autoFillLinkedInForm(true));
+    }
+
+    const btnRun = document.getElementById('btn-run-linkedin-analysis');
+    if (btnRun) {
+        btnRun.addEventListener('click', runLinkedInAnalysis);
+    }
+}
+
+function autoFillLinkedInForm(notify = false) {
+    const p = state.profile;
+    if (!p) return;
+
+    const roleInput = document.getElementById('li-target-role');
+    const headlineInput = document.getElementById('li-headline');
+    const aboutInput = document.getElementById('li-about');
+    const skillsInput = document.getElementById('li-skills');
+    const certsInput = document.getElementById('li-certs');
+    const expInput = document.getElementById('li-experience');
+    const urlInput = document.getElementById('li-profile-url');
+
+    if (roleInput && !roleInput.value) roleInput.value = 'Senior Software Engineer';
+    if (urlInput && p.linkedinUrl) urlInput.value = p.linkedinUrl;
+    if (headlineInput && !headlineInput.value) {
+        headlineInput.value = `${p.fullName || 'Software Candidate'} | Full Stack Engineer & Tech Specialist`;
+    }
+    if (aboutInput && !aboutInput.value) {
+        aboutInput.value = `Passionate and results-driven engineering professional with hands-on experience building scalable applications, designing robust architecture, and delivering high-quality software solutions.`;
+    }
+
+    if (skillsInput && p.skills) {
+        try {
+            const parsed = JSON.parse(p.skills);
+            if (Array.isArray(parsed)) skillsInput.value = parsed.join(', ');
+            else skillsInput.value = p.skills;
+        } catch (e) {
+            skillsInput.value = p.skills;
+        }
+    }
+
+    if (expInput && p.experience) {
+        try {
+            const parsed = JSON.parse(p.experience);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                expInput.value = parsed.map(x => `• ${x.title || x.role || 'Role'} at ${x.company || 'Company'}: ${x.description || x.details || ''}`).join('\n');
+            }
+        } catch (e) {}
+    }
+
+    if (notify) showNotification('LinkedIn form auto-filled from your profile details!', 'success');
+}
+
+async function runLinkedInAnalysis() {
+    const btnRun = document.getElementById('btn-run-linkedin-analysis');
+    const resultsContainer = document.getElementById('linkedin-results-container');
+    if (!btnRun || !resultsContainer) return;
+
+    const payload = {
+        targetRole: document.getElementById('li-target-role').value.trim() || 'Software Engineer',
+        profileUrl: document.getElementById('li-profile-url').value.trim(),
+        headline: document.getElementById('li-headline').value.trim(),
+        about: document.getElementById('li-about').value.trim(),
+        skills: document.getElementById('li-skills').value.trim(),
+        certifications: document.getElementById('li-certs').value.trim(),
+        experience: document.getElementById('li-experience').value.trim()
+    };
+
+    if (!payload.headline && !payload.about && !payload.skills) {
+        showNotification('Please enter at least a Headline, About summary, or Skills to analyze.', 'warning');
+        return;
+    }
+
+    btnRun.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Auditing Profile...';
+    btnRun.disabled = true;
+
+    try {
+        const response = await fetch('/api/analyzer/linkedin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('LinkedIn audit failed');
+        const data = await response.json();
+
+        renderLinkedInResults(data);
+        resultsContainer.style.display = 'block';
+        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+        console.error(err);
+        showNotification('Error performing LinkedIn analysis.', 'danger');
+    } finally {
+        btnRun.innerHTML = '<i class="fa-solid fa-chart-pie"></i> Run LinkedIn Profile Audit';
+        btnRun.disabled = false;
+    }
+}
+
+function renderLinkedInResults(data) {
+    document.getElementById('li-overall-score').textContent = data.overallScore || 0;
+    document.getElementById('li-score-grade').textContent = data.grade || 'LinkedIn Audit Complete';
+
+    const catGrid = document.getElementById('li-categories-grid');
+    if (catGrid && data.categoryScores) {
+        catGrid.innerHTML = '';
+        Object.keys(data.categoryScores).forEach(catName => {
+            const item = data.categoryScores[catName];
+            const card = document.createElement('div');
+            card.className = 'category-score-card';
+            card.innerHTML = `
+                <div class="cat-header">
+                    <span class="cat-title">${escapeHtml(catName)}</span>
+                    <span class="cat-badge ${item.status}">${item.status}</span>
+                </div>
+                <div class="cat-bar-wrapper">
+                    <div class="cat-bar-fill" style="width: ${item.score}%;"></div>
+                </div>
+                <div class="cat-footer">
+                    <span>Score: ${item.score}/100</span>
+                    <span>Weight: ${item.weight}</span>
+                </div>
+            `;
+            catGrid.appendChild(card);
+        });
+    }
+
+    const probsList = document.getElementById('li-problems-list');
+    if (probsList) {
+        probsList.innerHTML = '';
+        const problems = data.identifiedProblems || [];
+        if (problems.length > 0) {
+            problems.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'issue-item';
+                div.innerHTML = `<i class="fa-solid fa-circle-exclamation text-danger"></i> <span>${escapeHtml(p)}</span>`;
+                probsList.appendChild(div);
+            });
+        } else {
+            probsList.innerHTML = '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> No critical profile issues detected! Excellent positioning.</div>';
+        }
+    }
+
+    const suggsList = document.getElementById('li-suggestions-list');
+    if (suggsList) {
+        suggsList.innerHTML = '';
+        const suggestions = data.actionableSuggestions || [];
+        suggestions.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `<i class="fa-solid fa-lightbulb text-warning"></i> <span>${escapeHtml(s)}</span>`;
+            suggsList.appendChild(div);
+        });
+    }
+}
+
+// ----------------------------------------------------
+// FEATURE 19: GITHUB PROFILE ANALYZER FUNCTIONALITY
+// ----------------------------------------------------
+function initGitHubAnalyzer() {
+    const btnRun = document.getElementById('btn-run-github-analysis');
+    if (btnRun) {
+        btnRun.addEventListener('click', runGitHubAnalysis);
+    }
+}
+
+function autoFillGitHubForm(notify = false) {
+    const p = state.profile;
+    if (!p) return;
+
+    const usernameInput = document.getElementById('gh-username');
+    const roleInput = document.getElementById('gh-target-role');
+
+    if (usernameInput && p.githubUrl && !usernameInput.value) {
+        usernameInput.value = p.githubUrl;
+    }
+    if (roleInput && !roleInput.value) {
+        roleInput.value = 'Full Stack Engineer';
+    }
+}
+
+async function runGitHubAnalysis() {
+    const btnRun = document.getElementById('btn-run-github-analysis');
+    const resultsContainer = document.getElementById('github-results-container');
+    if (!btnRun || !resultsContainer) return;
+
+    const username = document.getElementById('gh-username').value.trim();
+    const targetRole = document.getElementById('gh-target-role').value.trim() || 'Software Engineer';
+
+    if (!username) {
+        showNotification('Please enter a GitHub username or profile URL.', 'warning');
+        return;
+    }
+
+    btnRun.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Auditing GitHub Profile...';
+    btnRun.disabled = true;
+
+    try {
+        const response = await fetch('/api/analyzer/github', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, targetRole })
+        });
+
+        if (!response.ok) throw new Error('GitHub analysis failed');
+        const data = await response.json();
+
+        renderGitHubResults(data);
+        resultsContainer.style.display = 'block';
+        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+    } catch (err) {
+        console.error(err);
+        showNotification('Error performing GitHub analysis.', 'danger');
+    } finally {
+        btnRun.innerHTML = '<i class="fa-brands fa-github-alt"></i> Audit GitHub Developer Profile';
+        btnRun.disabled = false;
+    }
+}
+
+function renderGitHubResults(data) {
+    document.getElementById('gh-overall-score').textContent = data.overallScore || 0;
+    document.getElementById('gh-score-grade').textContent = data.grade || 'GitHub Developer Audit';
+
+    const bannerCard = document.getElementById('gh-user-banner');
+    if (bannerCard && data.retrievedStats) {
+        const s = data.retrievedStats;
+        const liveBadge = data.isLiveApiData 
+            ? '<span class="badge badge-success"><i class="fa-solid fa-wifi"></i> Live GitHub API Data</span>' 
+            : '<span class="badge badge-warning"><i class="fa-solid fa-database"></i> Benchmark Analysis</span>';
+
+        const avatarSrc = s.avatarUrl || 'https://github.com/identicons/guest.png';
+        const topLangsStr = (s.topLanguages && s.topLanguages.length > 0) ? s.topLanguages.join(', ') : 'Languages N/A';
+
+        bannerCard.innerHTML = `
+            <img src="${escapeHtml(avatarSrc)}" alt="Avatar" class="gh-avatar" onerror="this.src='https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png'">
+            <div class="gh-user-info">
+                <div class="flex-header">
+                    <h3>${escapeHtml(s.name || data.username)} (@${escapeHtml(data.username)})</h3>
+                    ${liveBadge}
+                </div>
+                <p>${escapeHtml(s.bio || 'Public GitHub Developer Profile')}</p>
+                <div class="gh-stats-pills">
+                    <span class="gh-pill"><i class="fa-solid fa-book-bookmark text-primary"></i> ${s.publicRepos || 0} Repositories</span>
+                    <span class="gh-pill"><i class="fa-solid fa-star text-warning"></i> ${s.totalStars || 0} Stars</span>
+                    <span class="gh-pill"><i class="fa-solid fa-code-fork text-cyan"></i> ${s.totalForks || 0} Forks</span>
+                    <span class="gh-pill"><i class="fa-solid fa-users text-green"></i> ${s.followers || 0} Followers</span>
+                    <span class="gh-pill"><i class="fa-solid fa-code text-purple"></i> ${escapeHtml(topLangsStr)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    const catGrid = document.getElementById('gh-categories-grid');
+    if (catGrid && data.categoryScores) {
+        catGrid.innerHTML = '';
+        Object.keys(data.categoryScores).forEach(catName => {
+            const item = data.categoryScores[catName];
+            const card = document.createElement('div');
+            card.className = 'category-score-card';
+            card.innerHTML = `
+                <div class="cat-header">
+                    <span class="cat-title">${escapeHtml(catName)}</span>
+                    <span class="cat-badge ${item.status}">${item.status}</span>
+                </div>
+                <div class="cat-bar-wrapper">
+                    <div class="cat-bar-fill" style="width: ${item.score}%;"></div>
+                </div>
+                <div class="cat-footer">
+                    <span>Score: ${item.score}/100</span>
+                    <span>Weight: ${item.weight}</span>
+                </div>
+            `;
+            catGrid.appendChild(card);
+        });
+    }
+
+    const probsList = document.getElementById('gh-problems-list');
+    if (probsList) {
+        probsList.innerHTML = '';
+        const issues = data.identifiedIssues || [];
+        if (issues.length > 0) {
+            issues.forEach(issue => {
+                const div = document.createElement('div');
+                div.className = 'issue-item';
+                div.innerHTML = `<i class="fa-solid fa-circle-exclamation text-danger"></i> <span>${escapeHtml(issue)}</span>`;
+                probsList.appendChild(div);
+            });
+        } else {
+            probsList.innerHTML = '<div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> Great job! No critical repository issues found.</div>';
+        }
+    }
+
+    const suggsList = document.getElementById('gh-suggestions-list');
+    if (suggsList) {
+        suggsList.innerHTML = '';
+        const suggestions = data.actionableSuggestions || [];
+        suggestions.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'suggestion-item';
+            div.innerHTML = `<i class="fa-solid fa-rocket text-success"></i> <span>${escapeHtml(s)}</span>`;
+            suggsList.appendChild(div);
+        });
     }
 }

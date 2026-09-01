@@ -123,3 +123,46 @@ This log tracks all architectural and design changes authorized and implemented 
 - **[ResumeController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/ResumeController.java)**: Exposed `POST /api/resumes/cover-letter`.
 - **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Created `#view-cover-letter` and sidebar link `Cover Letter AI`. Implemented submission handler, copy-to-clipboard handler, and text file download handler.
 
+---
+
+## 🎨 Phase 8: Resume Templates, LinkedIn Profile Analyzer & GitHub Profile Analyzer
+
+### 1. Feature 17: Resume Templates
+- **[TemplateService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/TemplateService.java)**: Created template service with HTML rendering engines for 5 professional layouts:
+  1. `ats` (ATS Friendly Resume)
+  2. `professional` (Professional Corporate Resume)
+  3. `modern` (Modern Polished Resume)
+  4. `minimal` (Minimalist Clean Resume)
+  5. `creative` (Creative Portfolio Resume)
+- **[TemplateController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/TemplateController.java)**: Exposed `GET /api/templates` and `POST /api/templates/render`.
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**: Added `#view-templates` section with 5 template selection cards, source resume selector dropdown, live HTML preview canvas, Print/PDF button, HTML export button, and text copy button.
+- **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Wired template selection, live preview AJAX rendering, HTML export, and print event listeners.
+
+### 2. Feature 18: LinkedIn Profile Analyzer
+- **[LinkedInAnalyzerService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/LinkedInAnalyzerService.java)**: Created LinkedIn audit service evaluating:
+  - Profile Completeness
+  - Headline Positioning
+  - About / Summary Quality
+  - Skills & Keyword Density
+  - Experience & Impact Metrics
+  - Certifications & Validation
+  - Overall Score (0-100) and Letter Grade
+  - Identified Profile Weaknesses & Specific Actionable Suggestions
+- **[CareerToolsController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/CareerToolsController.java)**: Exposed `POST /api/analyzer/linkedin`.
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**: Added `#view-linkedin` section with form parameters, Auto-fill from Career Profile button, overall score wheel banner, category progress bar cards grid, identified problems list, and actionable optimization suggestions.
+- **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Implemented `initLinkedInAnalyzer()`, `autoFillLinkedInForm()`, and `runLinkedInAnalysis()`.
+
+### 3. Feature 19: GitHub Profile Analyzer
+- **[GitHubAnalyzerService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/GitHubAnalyzerService.java)**: Created GitHub audit service integrating with live GitHub REST API (`https://api.github.com/users/{username}`) to evaluate:
+  - Repository Quality (READMEs, descriptions, demo links, test repos)
+  - Programming Languages & Diversity
+  - Commit & Project Activity
+  - Contribution & Impact (Stars, Forks, Followers)
+  - Profile & Documentation Quality
+  - Overall GitHub Score (0-100) and Letter Grade
+  - Graceful fallback for API rate-limiting / network offline.
+  - Identified Repository Issues & Actionable Recommendations
+- **[CareerToolsController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/CareerToolsController.java)**: Exposed `POST /api/analyzer/github`.
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**: Added `#view-github` section with username/role inputs, user profile header card (avatar, bio, stars, forks, followers, top languages, live API status badge), score banner, category breakdown grid, issues list, and developer recommendations list.
+- **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Implemented `initGitHubAnalyzer()`, `autoFillGitHubForm()`, and `runGitHubAnalysis()`.
+
