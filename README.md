@@ -1,8 +1,6 @@
 # AI Resume Analyzer & Career Assistant
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.1-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+🌐 **Live Application Link**: [https://resume-analyzer-ai-bvpv.onrender.com]
 
 An AI-powered, 100% offline resume analysis platform built with Spring Boot and modern Vanilla JavaScript. Parse PDF and DOCX resumes, extract candidate profiles, audit ATS readiness, run job description matching, check writing grammar, track resume history with version control, and download comprehensive career reports without external API keys.
 
