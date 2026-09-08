@@ -88,6 +88,14 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 - Graceful API rate-limit and offline fallback handling.
 - Provides tailored recommendations (e.g. adding READMEs, pinning top 4-6 projects, adding demo links, archiving test repos).
 
+### 👥 14. Recruiter Candidate Screening Dashboard
+- **Bulk Resume Upload**: Upload multiple candidate PDF/DOC/DOCX resumes simultaneously with fault-tolerant individual file processing and live batch progress tracking.
+- **Candidate Ranking**: Automatic candidate ranking by ATS score descending (#1, #2, #3...).
+- **Multi-Criteria Filtering**: Filter candidates dynamically by Skill substring, Min/Max Experience years, Education Degree level (PhD, Master's, Bachelor's, Associate), ATS Score range (80-100, 60-79, 40-59, <40), and Shortlist status.
+- **Shortlist Persistence**: Shortlist/unshortlist candidates with database persistence in `uploaded_resumes`.
+- **Side-by-Side Comparison**: Select multiple candidates to compare ATS scores, skills, experience, education, strengths, and weaknesses side-by-side.
+- **Evaluation Report Downloads**: Download comprehensive candidate evaluation reports as text documents.
+
 ---
 
 ## 🛠️ Technology Stack
@@ -124,6 +132,10 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 | `POST` | `/api/templates/render` | Render resume template HTML preview |
 | `POST` | `/api/analyzer/linkedin` | Audit LinkedIn profile payload & generate score + suggestions |
 | `POST` | `/api/analyzer/github` | Audit GitHub profile via REST API & generate score + recommendations |
+| `POST` | `/api/recruiter/upload-batch` | Upload and process multiple candidate resumes in batch |
+| `GET` | `/api/recruiter/candidates` | List all processed candidates with ranking, ATS scores, experience & shortlist status |
+| `POST` | `/api/recruiter/candidates/{id}/shortlist` | Toggle or set shortlisted status for candidate (persisted in DB) |
+| `GET` | `/api/recruiter/candidates/{id}/report` | Download comprehensive candidate evaluation report file |
 | `DELETE` | `/api/resumes/{id}` | Delete resume record and stored local file |
 | `GET` | `/api/profile` | Get active user profile |
 | `PUT` | `/api/profile` | Update active user profile details |

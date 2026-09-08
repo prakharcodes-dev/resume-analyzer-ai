@@ -17,7 +17,21 @@ const state = {
     },
     resumes: [],
     activeTemplate: 'ats',
-    selectedTmplSource: 'profile'
+    selectedTmplSource: 'profile',
+    recruiter: {
+        candidates: [],
+        filteredCandidates: [],
+        selectedIds: new Set(),
+        filters: {
+            skill: '',
+            expMin: 0,
+            degree: 'ALL',
+            atsRange: 'ALL',
+            shortlistedOnly: false
+        },
+        sortBy: 'rank-asc',
+        viewMode: 'table'
+    }
 };
 
 // ----------------------------------------------------
@@ -33,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTemplates();
     initLinkedInAnalyzer();
     initGitHubAnalyzer();
+    initRecruiterDashboard();
     loadProfile();
     loadResumes();
 });
@@ -71,6 +86,8 @@ function initRouting() {
                 autoFillLinkedInForm(false);
             } else if (targetView === 'github') {
                 autoFillGitHubForm(false);
+            } else if (targetView === 'recruiter') {
+                loadRecruiterCandidates();
             }
         });
     });
@@ -2310,4 +2327,573 @@ function renderGitHubResults(data) {
             suggsList.appendChild(div);
         });
     }
+}
+
+// ----------------------------------------------------
+// FEATURE: RECRUITER DASHBOARD FUNCTIONALITY
+// ----------------------------------------------------
+function initRecruiterDashboard() {
+    const btnTrigger = document.getElementById('btn-rc-trigger-upload');
+    const uploadCard = document.getElementById('rc-upload-card');
+    const btnCloseUpload = document.getElementById('btn-rc-close-upload');
+
+    if (btnTrigger && uploadCard) {
+        btnTrigger.addEventListener('click', () => {
+            uploadCard.style.display = uploadCard.style.display === 'none' ? 'block' : 'none';
+            if (uploadCard.style.display === 'block') {
+                uploadCard.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+
+    if (btnCloseUpload && uploadCard) {
+        btnCloseUpload.addEventListener('click', () => {
+            uploadCard.style.display = 'none';
+        });
+    }
+
+    const dropzone = document.getElementById('rc-dropzone');
+    const fileInput = document.getElementById('rc-file-input');
+
+    if (dropzone && fileInput) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.borderColor = '#4f46e5';
+                dropzone.style.backgroundColor = 'rgba(99, 102, 241, 0.12)';
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.borderColor = '#6366f1';
+                dropzone.style.backgroundColor = '';
+            }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                handleRecruiterBatchUpload(files);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                handleRecruiterBatchUpload(e.target.files);
+            }
+        });
+    }
+
+    const skillInput = document.getElementById('rc-filter-skill');
+    if (skillInput) {
+        skillInput.addEventListener('input', (e) => {
+            state.recruiter.filters.skill = e.target.value.trim().toLowerCase();
+            renderRecruiterCandidates();
+        });
+    }
+
+    const expMinInput = document.getElementById('rc-filter-exp-min');
+    if (expMinInput) {
+        expMinInput.addEventListener('input', (e) => {
+            state.recruiter.filters.expMin = parseInt(e.target.value) || 0;
+            renderRecruiterCandidates();
+        });
+    }
+
+    const degreeSelect = document.getElementById('rc-filter-degree');
+    if (degreeSelect) {
+        degreeSelect.addEventListener('change', (e) => {
+            state.recruiter.filters.degree = e.target.value;
+            renderRecruiterCandidates();
+        });
+    }
+
+    const atsSelect = document.getElementById('rc-filter-ats');
+    if (atsSelect) {
+        atsSelect.addEventListener('change', (e) => {
+            state.recruiter.filters.atsRange = e.target.value;
+            renderRecruiterCandidates();
+        });
+    }
+
+    const btnToggleShortlisted = document.getElementById('btn-rc-toggle-shortlisted');
+    if (btnToggleShortlisted) {
+        btnToggleShortlisted.addEventListener('click', () => {
+            state.recruiter.filters.shortlistedOnly = !state.recruiter.filters.shortlistedOnly;
+            if (state.recruiter.filters.shortlistedOnly) {
+                btnToggleShortlisted.classList.add('active');
+                btnToggleShortlisted.style.background = '#e0e7ff';
+                btnToggleShortlisted.style.borderColor = '#6366f1';
+            } else {
+                btnToggleShortlisted.classList.remove('active');
+                btnToggleShortlisted.style.background = '';
+                btnToggleShortlisted.style.borderColor = '';
+            }
+            renderRecruiterCandidates();
+        });
+    }
+
+    const btnClearFilters = document.getElementById('btn-rc-clear-filters');
+    const btnEmptyClear = document.getElementById('btn-rc-empty-clear');
+    const resetFilters = () => {
+        state.recruiter.filters = { skill: '', expMin: 0, degree: 'ALL', atsRange: 'ALL', shortlistedOnly: false };
+        if (skillInput) skillInput.value = '';
+        if (expMinInput) expMinInput.value = '';
+        if (degreeSelect) degreeSelect.value = 'ALL';
+        if (atsSelect) atsSelect.value = 'ALL';
+        if (btnToggleShortlisted) {
+            btnToggleShortlisted.classList.remove('active');
+            btnToggleShortlisted.style.background = '';
+            btnToggleShortlisted.style.borderColor = '';
+        }
+        renderRecruiterCandidates();
+    };
+    if (btnClearFilters) btnClearFilters.addEventListener('click', resetFilters);
+    if (btnEmptyClear) btnEmptyClear.addEventListener('click', resetFilters);
+
+    const sortSelect = document.getElementById('rc-sort-by');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', (e) => {
+            state.recruiter.sortBy = e.target.value;
+            renderRecruiterCandidates();
+        });
+    }
+
+    const btnTable = document.getElementById('btn-rc-view-table');
+    const btnCards = document.getElementById('btn-rc-view-cards');
+    if (btnTable && btnCards) {
+        btnTable.addEventListener('click', () => {
+            state.recruiter.viewMode = 'table';
+            btnTable.classList.add('active');
+            btnCards.classList.remove('active');
+            renderRecruiterCandidates();
+        });
+        btnCards.addEventListener('click', () => {
+            state.recruiter.viewMode = 'cards';
+            btnCards.classList.add('active');
+            btnTable.classList.remove('active');
+            renderRecruiterCandidates();
+        });
+    }
+
+    const selectAllCb = document.getElementById('rc-select-all');
+    if (selectAllCb) {
+        selectAllCb.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const checkboxes = document.querySelectorAll('.rc-cand-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+                const id = parseInt(cb.value);
+                if (isChecked) state.recruiter.selectedIds.add(id);
+                else state.recruiter.selectedIds.delete(id);
+            });
+            updateCompareSelectedButton();
+        });
+    }
+
+    const btnCompareSelected = document.getElementById('btn-rc-compare-selected');
+    if (btnCompareSelected) {
+        btnCompareSelected.addEventListener('click', renderSideBySideComparison);
+    }
+
+    const modal = document.getElementById('recruiter-compare-modal');
+    const btnCloseModal = document.getElementById('btn-close-rc-compare-modal');
+    const btnCloseFooter = document.getElementById('btn-close-rc-compare-footer');
+
+    const closeModal = () => {
+        if (modal) modal.classList.remove('active');
+    };
+    if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+    if (btnCloseFooter) btnCloseFooter.addEventListener('click', closeModal);
+}
+
+async function handleRecruiterBatchUpload(files) {
+    const statusWrapper = document.getElementById('rc-upload-status-wrapper');
+    const progressBar = document.getElementById('rc-batch-progress-bar');
+    const progressText = document.getElementById('rc-batch-progress-text');
+    const resultsList = document.getElementById('rc-file-results-list');
+    const statusBadge = document.getElementById('rc-batch-status-badge');
+
+    if (!statusWrapper || !resultsList) return;
+
+    statusWrapper.style.display = 'block';
+    resultsList.innerHTML = '';
+    progressBar.style.width = '20%';
+    progressText.textContent = `Processing Batch (0/${files.length})...`;
+    statusBadge.textContent = 'Processing';
+    statusBadge.className = 'badge badge-purple';
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+    }
+
+    try {
+        progressBar.style.width = '60%';
+        progressText.textContent = `Uploading & Analyzing ${files.length} Candidate Resumes...`;
+
+        const response = await fetch('/api/recruiter/upload-batch', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) throw new Error('Batch upload failed.');
+        const data = await response.json();
+
+        progressBar.style.width = '100%';
+        progressText.textContent = `Batch Processing Complete (${files.length} Candidates Processed)!`;
+        statusBadge.textContent = 'Completed';
+        statusBadge.className = 'badge badge-success';
+
+        const candidates = data.candidates || [];
+        candidates.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'rc-file-status-item';
+            if (c.status === 'SUCCESS') {
+                item.innerHTML = `
+                    <span><i class="fa-solid fa-circle-check text-success mr-2"></i> ${escapeHtml(c.fileName)} (${escapeHtml(c.candidateName)})</span>
+                    <span class="badge badge-purple">ATS: ${c.atsScore}/100</span>
+                `;
+            } else {
+                item.innerHTML = `
+                    <span><i class="fa-solid fa-triangle-exclamation text-danger mr-2"></i> ${escapeHtml(c.fileName)}</span>
+                    <span class="badge badge-danger">Failed</span>
+                `;
+            }
+            resultsList.appendChild(item);
+        });
+
+        showNotification(`Successfully processed ${files.length} candidate resumes!`, 'success');
+        loadRecruiterCandidates();
+    } catch (err) {
+        console.error(err);
+        progressBar.style.width = '100%';
+        progressBar.className = 'progress-bar bg-danger';
+        progressText.textContent = 'Batch upload encountered an error.';
+        statusBadge.textContent = 'Error';
+        statusBadge.className = 'badge badge-danger';
+        showNotification('Error processing batch resumes.', 'danger');
+    }
+}
+
+async function loadRecruiterCandidates() {
+    try {
+        const response = await fetch('/api/recruiter/candidates');
+        if (!response.ok) throw new Error('Failed to fetch candidates');
+        const data = await response.json();
+
+        state.recruiter.candidates = data.candidates || [];
+        renderRecruiterCandidates();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function renderRecruiterCandidates() {
+    let list = [...state.recruiter.candidates];
+    const filters = state.recruiter.filters;
+
+    if (filters.skill) {
+        list = list.filter(c => {
+            const skillsStr = (c.skills || []).join(' ').toLowerCase();
+            return skillsStr.includes(filters.skill);
+        });
+    }
+
+    if (filters.expMin > 0) {
+        list = list.filter(c => (c.yearsOfExperience || 0) >= filters.expMin);
+    }
+
+    if (filters.degree !== 'ALL') {
+        list = list.filter(c => c.degreeLevel === filters.degree);
+    }
+
+    if (filters.atsRange !== 'ALL') {
+        if (filters.atsRange === '80-100') list = list.filter(c => c.atsScore >= 80);
+        else if (filters.atsRange === '60-79') list = list.filter(c => c.atsScore >= 60 && c.atsScore <= 79);
+        else if (filters.atsRange === '40-59') list = list.filter(c => c.atsScore >= 40 && c.atsScore <= 59);
+        else if (filters.atsRange === '0-39') list = list.filter(c => c.atsScore < 40);
+    }
+
+    if (filters.shortlistedOnly) {
+        list = list.filter(c => c.shortlisted === true);
+    }
+
+    const sortBy = state.recruiter.sortBy;
+    if (sortBy === 'rank-asc') {
+        list.sort((a, b) => (a.rank || 999) - (b.rank || 999));
+    } else if (sortBy === 'rank-desc') {
+        list.sort((a, b) => (b.rank || 0) - (a.rank || 0));
+    } else if (sortBy === 'exp-desc') {
+        list.sort((a, b) => (b.yearsOfExperience || 0) - (a.yearsOfExperience || 0));
+    } else if (sortBy === 'name-asc') {
+        list.sort((a, b) => (a.candidateName || '').localeCompare(b.candidateName || ''));
+    }
+
+    state.recruiter.filteredCandidates = list;
+
+    const totalCount = state.recruiter.candidates.length;
+    const shortlistedCount = state.recruiter.candidates.filter(c => c.shortlisted).length;
+    let avgScore = 0;
+    if (totalCount > 0) {
+        const sum = state.recruiter.candidates.reduce((acc, c) => acc + (c.atsScore || 0), 0);
+        avgScore = Math.round(sum / totalCount);
+    }
+    const topCandidate = state.recruiter.candidates.length > 0 ? state.recruiter.candidates[0].candidateName : 'None';
+
+    const statTotal = document.getElementById('rc-stat-total');
+    const statShort = document.getElementById('rc-stat-shortlisted');
+    const statAvg = document.getElementById('rc-stat-avg-score');
+    const statTop = document.getElementById('rc-stat-top-candidate');
+
+    if (statTotal) statTotal.textContent = totalCount;
+    if (statShort) statShort.textContent = shortlistedCount;
+    if (statAvg) statAvg.textContent = `${avgScore} / 100`;
+    if (statTop) statTop.textContent = topCandidate;
+
+    const tableContainer = document.getElementById('rc-table-container');
+    const cardsContainer = document.getElementById('rc-cards-container');
+    const emptyContainer = document.getElementById('rc-empty-container');
+
+    if (list.length === 0) {
+        if (tableContainer) tableContainer.style.display = 'none';
+        if (cardsContainer) cardsContainer.style.display = 'none';
+        if (emptyContainer) emptyContainer.style.display = 'block';
+        return;
+    }
+
+    if (emptyContainer) emptyContainer.style.display = 'none';
+
+    if (state.recruiter.viewMode === 'table') {
+        if (cardsContainer) cardsContainer.style.display = 'none';
+        if (tableContainer) tableContainer.style.display = 'block';
+        renderCandidateTable(list);
+    } else {
+        if (tableContainer) tableContainer.style.display = 'none';
+        if (cardsContainer) cardsContainer.style.display = 'grid';
+        renderCandidateCards(list);
+    }
+}
+
+function renderCandidateTable(list) {
+    const tbody = document.getElementById('rc-candidate-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    list.forEach(c => {
+        const tr = document.createElement('tr');
+        const isSelected = state.recruiter.selectedIds.has(c.id);
+        const rankClass = c.rank <= 3 ? `rank-${c.rank}` : '';
+        const starClass = c.shortlisted ? 'active' : '';
+        const skillsPills = (c.skills || []).slice(0, 4).map(s => `<span class="cand-skill-pill">${escapeHtml(s)}</span>`).join('');
+
+        tr.innerHTML = `
+            <td><input type="checkbox" class="rc-cand-checkbox" value="${c.id}" ${isSelected ? 'checked' : ''}></td>
+            <td><span class="rank-badge ${rankClass}">#${c.rank}</span></td>
+            <td>
+                <strong>${escapeHtml(c.candidateName)}</strong><br>
+                <small class="text-muted">${escapeHtml(c.fileName)}</small>
+            </td>
+            <td>
+                <span class="badge badge-purple" style="font-size: 0.9rem;">${c.atsScore} / 100</span><br>
+                <small class="text-muted">${c.atsCompatibility}</small>
+            </td>
+            <td><div class="cand-skill-pills">${skillsPills || '<span class="text-muted small">N/A</span>'}</div></td>
+            <td><strong>~${c.yearsOfExperience} yrs</strong></td>
+            <td><span class="badge badge-outline">${escapeHtml(c.degreeLevel)}</span></td>
+            <td class="text-center">
+                <button class="star-btn ${starClass}" onclick="toggleCandidateShortlist(${c.id})" title="Toggle Shortlist">
+                    <i class="fa-${c.shortlisted ? 'solid' : 'regular'} fa-star"></i>
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline mr-1" onclick="viewResumeDetails(${c.id})" title="View Details"><i class="fa-solid fa-eye"></i></button>
+                <button class="btn btn-sm btn-secondary" onclick="downloadCandidateReport(${c.id})" title="Download Report"><i class="fa-solid fa-download"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    const checkboxes = tbody.querySelectorAll('.rc-cand-checkbox');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const id = parseInt(e.target.value);
+            if (e.target.checked) state.recruiter.selectedIds.add(id);
+            else state.recruiter.selectedIds.delete(id);
+            updateCompareSelectedButton();
+        });
+    });
+}
+
+function renderCandidateCards(list) {
+    const grid = document.getElementById('rc-cards-container');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+    list.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'candidate-card';
+        const isSelected = state.recruiter.selectedIds.has(c.id);
+        const rankClass = c.rank <= 3 ? `rank-${c.rank}` : '';
+        const starClass = c.shortlisted ? 'active' : '';
+        const skillsPills = (c.skills || []).slice(0, 5).map(s => `<span class="cand-skill-pill">${escapeHtml(s)}</span>`).join('');
+
+        card.innerHTML = `
+            <div class="cand-card-header">
+                <span class="rank-badge ${rankClass}">#${c.rank}</span>
+                <div>
+                    <input type="checkbox" class="rc-cand-checkbox mr-2" value="${c.id}" ${isSelected ? 'checked' : ''}>
+                    <button class="star-btn ${starClass}" onclick="toggleCandidateShortlist(${c.id})" title="Toggle Shortlist">
+                        <i class="fa-${c.shortlisted ? 'solid' : 'regular'} fa-star"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="cand-card-title">
+                <h4>${escapeHtml(c.candidateName)}</h4>
+                <p>${escapeHtml(c.fileName)}</p>
+            </div>
+            <div class="cand-card-meta">
+                <span><i class="fa-solid fa-gauge-high text-warning"></i> ATS: <strong>${c.atsScore}/100</strong></span>
+                <span><i class="fa-solid fa-briefcase text-green"></i> <strong>~${c.yearsOfExperience} yrs</strong></span>
+                <span><i class="fa-solid fa-graduation-cap text-cyan"></i> <strong>${escapeHtml(c.degreeLevel)}</strong></span>
+            </div>
+            <div class="cand-skill-pills">${skillsPills || '<span class="text-muted small">No skills detected</span>'}</div>
+            <div class="flex-header mt-2">
+                <button class="btn btn-sm btn-outline" onclick="viewResumeDetails(${c.id})"><i class="fa-solid fa-eye"></i> Details</button>
+                <button class="btn btn-sm btn-secondary" onclick="downloadCandidateReport(${c.id})"><i class="fa-solid fa-download"></i> Report</button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+
+    const checkboxes = grid.querySelectorAll('.rc-cand-checkbox');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const id = parseInt(e.target.value);
+            if (e.target.checked) state.recruiter.selectedIds.add(id);
+            else state.recruiter.selectedIds.delete(id);
+            updateCompareSelectedButton();
+        });
+    });
+}
+
+function updateCompareSelectedButton() {
+    const btnCompare = document.getElementById('btn-rc-compare-selected');
+    const countSpan = document.getElementById('rc-selected-count');
+    const size = state.recruiter.selectedIds.size;
+
+    if (countSpan) countSpan.textContent = size;
+    if (btnCompare) {
+        if (size >= 2) {
+            btnCompare.disabled = false;
+            btnCompare.className = 'btn btn-primary';
+        } else {
+            btnCompare.disabled = true;
+            btnCompare.className = 'btn btn-secondary';
+        }
+    }
+}
+
+async function toggleCandidateShortlist(candidateId) {
+    try {
+        const response = await fetch(`/api/recruiter/candidates/${candidateId}/shortlist`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to toggle shortlist status');
+        const updated = await response.json();
+
+        const idx = state.recruiter.candidates.findIndex(c => c.id === candidateId);
+        if (idx !== -1) {
+            state.recruiter.candidates[idx].shortlisted = updated.shortlisted;
+        }
+
+        showNotification(updated.shortlisted ? 'Candidate shortlisted!' : 'Candidate removed from shortlist.', 'info');
+        renderRecruiterCandidates();
+    } catch (err) {
+        console.error(err);
+        showNotification('Error toggling candidate shortlist.', 'danger');
+    }
+}
+
+function downloadCandidateReport(candidateId) {
+    window.open(`/api/recruiter/candidates/${candidateId}/report`, '_blank');
+}
+
+function renderSideBySideComparison() {
+    const selectedIds = Array.from(state.recruiter.selectedIds);
+    if (selectedIds.length < 2) {
+        showNotification('Please select at least 2 candidates to compare side-by-side.', 'warning');
+        return;
+    }
+
+    const modal = document.getElementById('recruiter-compare-modal');
+    const canvas = document.getElementById('rc-compare-canvas');
+    if (!modal || !canvas) return;
+
+    const selectedCandidates = state.recruiter.candidates.filter(c => selectedIds.includes(c.id));
+
+    canvas.innerHTML = '';
+    selectedCandidates.forEach(c => {
+        const card = document.createElement('div');
+        card.className = 'rc-compare-card';
+
+        const skillsTags = (c.skills || []).map(s => `<span class="badge badge-purple mr-1 mb-1">${escapeHtml(s)}</span>`).join('');
+        const strengthsList = (c.strengths || []).map(st => `<li><i class="fa-solid fa-check text-success mr-1"></i> ${escapeHtml(st)}</li>`).join('');
+        const weaknessesList = (c.weaknesses || []).map(wk => `<li><i class="fa-solid fa-xmark text-danger mr-1"></i> ${escapeHtml(wk)}</li>`).join('');
+
+        card.innerHTML = `
+            <div class="flex-header">
+                <div>
+                    <span class="rank-badge rank-${c.rank <= 3 ? c.rank : ''}">#${c.rank}</span>
+                    <h4 class="d-inline-block ml-2 mb-0">${escapeHtml(c.candidateName)}</h4>
+                </div>
+                <span class="badge badge-${c.shortlisted ? 'warning' : 'outline'}">${c.shortlisted ? '★ Shortlisted' : 'Standard'}</span>
+            </div>
+            <p class="text-muted small">${escapeHtml(c.fileName)}</p>
+
+            <div class="overall-score-banner p-3">
+                <div class="score-dial" style="width:70px; height:70px;">
+                    <span class="score-number" style="font-size:1.5rem;">${c.atsScore}</span>
+                </div>
+                <div class="score-banner-text">
+                    <h4 class="mb-0" style="color:#fff;">${c.atsCompatibility}</h4>
+                    <p style="font-size:0.8rem;">ATS Compatibility</p>
+                </div>
+            </div>
+
+            <div>
+                <strong>Experience & Education:</strong>
+                <p class="mb-1"><i class="fa-solid fa-briefcase text-green"></i> ~${c.yearsOfExperience} Years Experience</p>
+                <p class="mb-0"><i class="fa-solid fa-graduation-cap text-cyan"></i> Degree: ${escapeHtml(c.degreeLevel)}</p>
+            </div>
+
+            <div>
+                <strong>Extracted Skills:</strong>
+                <div class="mt-1">${skillsTags || '<span class="text-muted small">None</span>'}</div>
+            </div>
+
+            <div>
+                <strong>Key Strengths:</strong>
+                <ul class="list-unstyled small mt-1 mb-0">${strengthsList}</ul>
+            </div>
+
+            <div>
+                <strong>Gaps / Weaknesses:</strong>
+                <ul class="list-unstyled small mt-1 mb-0">${weaknessesList}</ul>
+            </div>
+
+            <div class="mt-2">
+                <button class="btn btn-sm btn-outline btn-block" onclick="downloadCandidateReport(${c.id})"><i class="fa-solid fa-download"></i> Download Full Report</button>
+            </div>
+        `;
+        canvas.appendChild(card);
+    });
+
+    modal.classList.add('active');
 }

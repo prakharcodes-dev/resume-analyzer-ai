@@ -166,3 +166,25 @@ This log tracks all architectural and design changes authorized and implemented 
 - **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)** & **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**: Added `#view-github` section with username/role inputs, user profile header card (avatar, bio, stars, forks, followers, top languages, live API status badge), score banner, category breakdown grid, issues list, and developer recommendations list.
 - **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Implemented `initGitHubAnalyzer()`, `autoFillGitHubForm()`, and `runGitHubAnalysis()`.
 
+---
+
+## 👥 Phase 9: Recruiter Candidate Screening Dashboard
+
+### 1. Database Model & Persistence
+- **[UploadedResume.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/model/UploadedResume.java)**: Added `shortlisted` column (`BOOLEAN DEFAULT FALSE`) with getters and setters (`getShortlisted()`, `isShortlisted()`, `setShortlisted()`) for shortlist persistence in the H2 database.
+
+### 2. Recruiter Engine & APIs
+- **[RecruiterService.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/service/RecruiterService.java)**: Created candidate evaluation service that extracts candidate name, contact details, parsed skills, calculates work experience years, detects degree levels (PhD, Master's, Bachelor's, Associate), computes ATS scores, and extracts key strengths/weaknesses.
+- **[RecruiterController.java](file:///d:/AI%20RESUMER/src/main/java/com/career/resumeanalyzer/controller/RecruiterController.java)**: Exposed REST endpoints:
+  - `POST /api/recruiter/upload-batch`: Batch upload multiple PDF/DOCX resumes with fault-tolerant individual file processing.
+  - `GET /api/recruiter/candidates`: Returns all processed candidates with candidate ranking, ATS scores, experience, education, skills, and shortlist status.
+  - `POST /api/recruiter/candidates/{id}/shortlist`: Toggles/updates shortlisted status in H2 database.
+  - `GET /api/recruiter/candidates/{id}/report`: Downloads comprehensive text evaluation report for any candidate.
+
+### 3. Recruiter Dashboard UI & Frontend Logic
+- **[index.html](file:///d:/AI%20RESUMER/src/main/resources/static/index.html)**:
+  - Added `Recruiter Dashboard` link to sidebar navigation menu.
+  - Added `#view-recruiter` section featuring stats overview cards (Total Candidates, Shortlisted, Avg ATS Score, Top Candidate), expandable drag-and-drop batch upload dropzone with progress bar, filter & toolbar controls (Skill search, Experience min/max, Education degree selector, ATS range selector, Shortlisted Only toggle, Sort By dropdown, Table vs Cards View mode switch), Candidate list container (Table View & Grid View), and Side-by-Side Candidate Comparison Modal (`#recruiter-compare-modal`).
+- **[styles.css](file:///d:/AI%20RESUMER/src/main/resources/static/css/styles.css)**: Appended styling for recruiter cards, dropzones, rank badges (#1, #2, #3), shortlist star buttons, skill pills, card grid views, side-by-side comparison modal, and dark mode theme overrides.
+- **[app.js](file:///d:/AI%20RESUMER/src/main/resources/static/js/app.js)**: Implemented `initRecruiterDashboard()`, `handleRecruiterBatchUpload()`, `loadRecruiterCandidates()`, `renderRecruiterCandidates()`, `toggleCandidateShortlist()`, `renderSideBySideComparison()`, and `downloadCandidateReport()`.
+

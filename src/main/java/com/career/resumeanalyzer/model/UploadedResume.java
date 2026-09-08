@@ -39,6 +39,9 @@ public class UploadedResume {
     @Column(name = "raw_text", columnDefinition = "LONGTEXT")
     private String rawText;
 
+    @Column(name = "shortlisted")
+    private Boolean shortlisted = false;
+
     // Pre-persist hook to set upload date
     @PrePersist
     protected void onCreate() {
@@ -136,5 +139,17 @@ public class UploadedResume {
 
     public void setRawText(String rawText) {
         this.rawText = rawText;
+    }
+
+    public Boolean getShortlisted() {
+        return shortlisted != null && shortlisted;
+    }
+
+    public Boolean isShortlisted() {
+        return getShortlisted();
+    }
+
+    public void setShortlisted(Boolean shortlisted) {
+        this.shortlisted = shortlisted != null && shortlisted;
     }
 }

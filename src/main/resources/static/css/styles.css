@@ -2793,5 +2793,235 @@ body.dark-mode .gh-pill {
     color: #f3f4f6;
 }
 
+/* ----------------------------------------------------
+   FEATURE: RECRUITER DASHBOARD STYLES
+   ---------------------------------------------------- */
+.recruiter-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+body.dark-mode .recruiter-card {
+    background: #12102e !important;
+    border-color: #24214d !important;
+}
+
+.rc-upload-dropzone {
+    border: 2px dashed #6366f1;
+    border-radius: 14px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    background: rgba(99, 102, 241, 0.03);
+    transition: all 0.25s ease;
+    cursor: pointer;
+}
+
+.rc-upload-dropzone:hover {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: #4f46e5;
+}
+
+body.dark-mode .rc-upload-dropzone {
+    background: rgba(99, 102, 241, 0.06);
+    border-color: #818cf8;
+}
+
+.rc-file-status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.rc-file-status-item {
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+
+body.dark-mode .rc-file-status-item {
+    background: #1c1945;
+    border-color: #24214d;
+}
+
+.rc-toolbar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+@media (max-width: 992px) {
+    .rc-toolbar-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .rc-toolbar-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.rc-left-filters, .rc-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-weight: 800;
+    font-size: 0.85rem;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+.rank-badge.rank-1 {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.rank-badge.rank-2 {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+    color: #ffffff;
+}
+
+.rank-badge.rank-3 {
+    background: linear-gradient(135deg, #b45309, #78350f);
+    color: #ffffff;
+}
+
+body.dark-mode .rank-badge {
+    background: #312e81;
+    color: #c7d2fe;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+    padding: 0.25rem;
+}
+
+.star-btn:hover, .star-btn.active {
+    color: #f59e0b;
+    transform: scale(1.15);
+}
+
+.rc-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+}
+
+.candidate-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    position: relative;
+}
+
+.candidate-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+body.dark-mode .candidate-card {
+    background: #12102e;
+    border-color: #24214d;
+}
+
+.cand-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cand-card-title h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-main);
+}
+
+.cand-card-title p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.cand-card-meta {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.cand-skill-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.cand-skill-pill {
+    background: rgba(99, 102, 241, 0.08);
+    color: #4f46e5;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 12px;
+}
+
+body.dark-mode .cand-skill-pill {
+    background: rgba(99, 102, 241, 0.18);
+    color: #818cf8;
+}
+
+.rc-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.rc-compare-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+body.dark-mode .rc-compare-card {
+    background: #12102e;
+    border-color: #24214d;
+}
+
+
 
 

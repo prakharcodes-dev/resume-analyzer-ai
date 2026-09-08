@@ -53,6 +53,10 @@
                     <i class="fa-brands fa-github"></i>
                     <span>GitHub Analyzer</span>
                 </a>
+                <a href="#recruiter" class="nav-item" data-view="recruiter">
+                    <i class="fa-solid fa-users-gear"></i>
+                    <span>Recruiter Dashboard</span>
+                </a>
                 <a href="#profile" class="nav-item" data-view="profile">
                     <i class="fa-solid fa-user-tie"></i>
                     <span>Career Profile</span>
@@ -712,6 +716,184 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Recruiter Dashboard View -->
+            <section id="view-recruiter" class="content-view">
+                <div class="view-header flex-header mb-4">
+                    <div>
+                        <h2><i class="fa-solid fa-users-gear text-primary mr-2"></i> Recruiter Candidate Screening Dashboard</h2>
+                        <p class="text-muted">Upload, evaluate, rank, shortlist, and compare multiple candidate resumes at scale.</p>
+                    </div>
+                    <div class="rc-header-actions">
+                        <button class="btn btn-primary" id="btn-rc-trigger-upload">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Bulk Upload Resumes
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recruiter Stats Cards Grid -->
+                <div class="dashboard-grid mb-4">
+                    <div class="stat-card">
+                        <div class="stat-icon icon-purple"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-info">
+                            <h3 id="rc-stat-total">0</h3>
+                            <p>Total Candidates</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-cyan"><i class="fa-solid fa-star text-gold"></i></div>
+                        <div class="stat-info">
+                            <h3 id="rc-stat-shortlisted">0</h3>
+                            <p>Shortlisted Candidates</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-gauge-high"></i></div>
+                        <div class="stat-info">
+                            <h3 id="rc-stat-avg-score">0 / 100</h3>
+                            <p>Average ATS Score</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon icon-indigo"><i class="fa-solid fa-trophy text-warning"></i></div>
+                        <div class="stat-info">
+                            <h3 id="rc-stat-top-candidate">None</h3>
+                            <p>Top Ranked Candidate</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Resume Upload Card (Expandable/Collapsible) -->
+                <div class="recruiter-card mb-4" id="rc-upload-card" style="display: none;">
+                    <div class="card-header flex-header mb-3">
+                        <h4 class="m-0"><i class="fa-solid fa-folder-plus text-primary"></i> Bulk Resume Upload & Batch Processing</h4>
+                        <button class="btn-close" id="btn-rc-close-upload"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="rc-upload-dropzone" id="rc-dropzone">
+                        <i class="fa-solid fa-cloud-arrow-up fa-3x text-primary mb-3"></i>
+                        <h5>Drag & Drop Multiple Candidate Resumes Here</h5>
+                        <p class="text-muted">Supports PDF, DOC, and DOCX formats (Max 10MB per file). Each file is processed independently.</p>
+                        <input type="file" id="rc-file-input" multiple accept=".pdf,.doc,.docx" style="display: none;">
+                        <button class="btn btn-outline mt-2" onclick="document.getElementById('rc-file-input').click();">
+                            <i class="fa-solid fa-file-circle-plus"></i> Select Candidate Files
+                        </button>
+                    </div>
+                    <!-- Selected Files & Batch Progress Bar -->
+                    <div id="rc-upload-status-wrapper" style="display: none;" class="mt-3">
+                        <div class="flex-header mb-2">
+                            <span class="small font-weight-bold" id="rc-batch-progress-text">Processing Batch (0/0)...</span>
+                            <span class="badge badge-purple" id="rc-batch-status-badge">Processing</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar bg-primary" id="rc-batch-progress-bar" style="width: 0%;"></div>
+                        </div>
+                        <div id="rc-file-results-list" class="rc-file-status-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Filter & Control Toolbar -->
+                <div class="recruiter-card mb-4">
+                    <div class="rc-toolbar-grid mb-3">
+                        <!-- Skill Filter -->
+                        <div class="form-group-card">
+                            <label class="form-label"><i class="fa-solid fa-layer-group text-primary"></i> Filter by Skill</label>
+                            <input type="text" id="rc-filter-skill" placeholder="Search skill (e.g. Java, Python, React)..." class="form-control">
+                        </div>
+                        <!-- Experience Range Filter -->
+                        <div class="form-group-card">
+                            <label class="form-label"><i class="fa-solid fa-briefcase text-green"></i> Min Years Exp.</label>
+                            <input type="number" id="rc-filter-exp-min" min="0" max="30" placeholder="0" class="form-control">
+                        </div>
+                        <!-- Education Degree Filter -->
+                        <div class="form-group-card">
+                            <label class="form-label"><i class="fa-solid fa-graduation-cap text-cyan"></i> Education / Degree</label>
+                            <select id="rc-filter-degree" class="form-control">
+                                <option value="ALL">All Degrees</option>
+                                <option value="PhD">PhD / Doctorate</option>
+                                <option value="Master's">Master's Degree</option>
+                                <option value="Bachelor's">Bachelor's Degree</option>
+                                <option value="Associate / Diploma">Associate / Diploma</option>
+                            </select>
+                        </div>
+                        <!-- ATS Score Range Filter -->
+                        <div class="form-group-card">
+                            <label class="form-label"><i class="fa-solid fa-gauge-high text-warning"></i> ATS Score Range</label>
+                            <select id="rc-filter-ats" class="form-control">
+                                <option value="ALL">All Scores (0 - 100)</option>
+                                <option value="80-100">80 – 100 (Top Tier / Excellent)</option>
+                                <option value="60-79">60 – 79 (Solid / Good)</option>
+                                <option value="40-59">40 – 59 (Moderate)</option>
+                                <option value="0-39">Below 40 (Needs Work)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Toolbar Actions Row -->
+                    <div class="rc-toolbar-actions flex-header">
+                        <div class="rc-left-filters">
+                            <button class="btn btn-outline" id="btn-rc-toggle-shortlisted">
+                                <i class="fa-solid fa-star text-gold"></i> Shortlisted Only
+                            </button>
+                            <button class="btn btn-outline" id="btn-rc-clear-filters">
+                                <i class="fa-solid fa-filter-circle-xmark"></i> Clear Filters
+                            </button>
+                            <button class="btn btn-secondary" id="btn-rc-compare-selected" disabled>
+                                <i class="fa-solid fa-columns"></i> Compare Selected (<span id="rc-selected-count">0</span>)
+                            </button>
+                        </div>
+                        <div class="rc-right-controls">
+                            <label class="form-label mr-2 mb-0 text-muted">Sort By:</label>
+                            <select id="rc-sort-by" class="form-control form-select-sm d-inline-block" style="width: auto;">
+                                <option value="rank-asc">Rank / ATS Score (High to Low)</option>
+                                <option value="rank-desc">Rank / ATS Score (Low to High)</option>
+                                <option value="exp-desc">Experience (High to Low)</option>
+                                <option value="name-asc">Candidate Name (A - Z)</option>
+                            </select>
+                            <div class="view-mode-buttons ml-2 d-inline-block">
+                                <button class="btn btn-outline active" id="btn-rc-view-table" title="Table View"><i class="fa-solid fa-table-list"></i></button>
+                                <button class="btn btn-outline" id="btn-rc-view-cards" title="Cards View"><i class="fa-solid fa-grip"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Candidate List Container (Table View) -->
+                <div id="rc-table-container" class="recruiter-card mb-4">
+                    <div class="table-responsive">
+                        <table class="data-table" id="rc-candidate-table">
+                            <thead>
+                                <tr>
+                                    <th width="40"><input type="checkbox" id="rc-select-all"></th>
+                                    <th width="70">Rank</th>
+                                    <th>Candidate</th>
+                                    <th>ATS Score</th>
+                                    <th>Skills</th>
+                                    <th>Experience</th>
+                                    <th>Degree</th>
+                                    <th width="90">Shortlist</th>
+                                    <th width="140">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rc-candidate-tbody">
+                                <!-- Rendered dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Candidate List Container (Cards View) -->
+                <div id="rc-cards-container" class="rc-cards-grid mb-4" style="display: none;">
+                    <!-- Rendered dynamically -->
+                </div>
+
+                <!-- Empty Filter State -->
+                <div id="rc-empty-container" style="display: none;" class="recruiter-card text-center p-5 mb-4">
+                    <i class="fa-solid fa-user-slash fa-3x text-muted mb-3"></i>
+                    <h4>No Candidates Found</h4>
+                    <p class="text-muted">No candidate resumes match the active filter criteria. Try clearing filters or uploading new resumes.</p>
+                    <button class="btn btn-outline mt-2" id="btn-rc-empty-clear">Clear All Filters</button>
+                </div>
+            </section>
         </main>
     </div>
 
@@ -1233,6 +1415,27 @@
                     <button class="btn btn-sm btn-outline" id="btn-download-ai" title="Download AI Report"><i class="fa-solid fa-robot"></i> Download AI Report</button>
                 </div>
                 <button class="btn btn-secondary" id="btn-close-modal-footer">Close Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recruiter Side-by-Side Candidate Comparison Modal -->
+    <div class="modal-overlay" id="recruiter-compare-modal">
+        <div class="modal-container" style="max-width: 1400px; width: 95vw; height: 92vh;">
+            <div class="modal-header">
+                <div>
+                    <h3><i class="fa-solid fa-code-compare text-primary"></i> Side-by-Side Candidate Comparison</h3>
+                    <p class="text-muted">Direct side-by-side evaluation of selected candidates.</p>
+                </div>
+                <button class="btn-close" id="btn-close-rc-compare-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body p-4" style="overflow-y: auto;">
+                <div class="rc-compare-grid" id="rc-compare-canvas">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btn-close-rc-compare-footer">Close Comparison</button>
             </div>
         </div>
     </div>
