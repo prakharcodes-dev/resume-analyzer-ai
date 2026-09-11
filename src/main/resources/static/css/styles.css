@@ -3022,6 +3022,205 @@ body.dark-mode .rc-compare-card {
     border-color: #24214d;
 }
 
+/* ----------------------------------------------------
+   FRONTEND REDESIGN & UX ENHANCEMENTS
+   ---------------------------------------------------- */
+.nav-section-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    opacity: 0.7;
+    margin: 1.25rem 0 0.4rem 0.85rem;
+    text-transform: uppercase;
+}
+
+.nav-badge-pro {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.15rem 0.45rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: #ffffff;
+    margin-left: auto;
+}
+
+.welcome-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    color: #e0e7ff;
+    backdrop-filter: blur(4px);
+}
+
+.quick-start-guide {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+body.dark-mode .quick-start-guide {
+    background: #12102e;
+    border-color: #24214d;
+}
+
+.guide-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+
+@media (max-width: 900px) {
+    .guide-steps-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.step-card {
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+body.dark-mode .step-card {
+    background: #1c1945;
+    border-color: #24214d;
+}
+
+.step-num {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.step-content h5 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    color: var(--text-main);
+}
+
+.step-content p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.45;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
+@media (max-width: 1100px) {
+    .shortcuts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 576px) {
+    .shortcuts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.shortcut-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.shortcut-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 10px 25px rgba(99, 102, 241, 0.15);
+}
+
+body.dark-mode .shortcut-card {
+    background: #12102e;
+    border-color: #24214d;
+}
+
+body.dark-mode .shortcut-card:hover {
+    border-color: #6366f1;
+    background: #1c1945;
+}
+
+.shortcut-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.shortcut-icon.icon-purple { background: rgba(147, 51, 234, 0.12); color: #9333ea; }
+.shortcut-icon.icon-cyan { background: rgba(6, 182, 212, 0.12); color: #0891b2; }
+.shortcut-icon.icon-green { background: rgba(16, 185, 129, 0.12); color: #059669; }
+.shortcut-icon.icon-indigo { background: rgba(79, 70, 229, 0.12); color: #4f46e5; }
+
+body.dark-mode .shortcut-icon.icon-purple { background: rgba(147, 51, 234, 0.25); color: #c084fc; }
+body.dark-mode .shortcut-icon.icon-cyan { background: rgba(6, 182, 212, 0.25); color: #22d3ee; }
+body.dark-mode .shortcut-icon.icon-green { background: rgba(16, 185, 129, 0.25); color: #34d399; }
+body.dark-mode .shortcut-icon.icon-indigo { background: rgba(79, 70, 229, 0.25); color: #818cf8; }
+
+.shortcut-text {
+    flex-grow: 1;
+}
+
+.shortcut-text h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+    color: var(--text-main);
+}
+
+.shortcut-text p {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.shortcut-arrow {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.shortcut-card:hover .shortcut-arrow {
+    transform: translateX(4px);
+    color: var(--primary);
+}
+
+
 
 
 

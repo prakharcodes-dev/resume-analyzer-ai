@@ -25,18 +25,21 @@
                 </div>
             </div>
             <nav class="nav-menu">
+                <div class="nav-section-label">MAIN PLATFORM</div>
                 <a href="#dashboard" class="nav-item active" data-view="dashboard">
-                    <i class="fa-solid fa-chart-simple"></i>
+                    <i class="fa-solid fa-house"></i>
                     <span>Dashboard</span>
                 </a>
                 <a href="#resumes" class="nav-item" data-view="resumes">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span>Resume History</span>
                 </a>
-                <a href="#compare" class="nav-item" data-view="compare">
-                    <i class="fa-solid fa-code-compare"></i>
-                    <span>Resume Comparison</span>
+                <a href="#profile" class="nav-item" data-view="profile">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <span>Career Profile</span>
                 </a>
+
+                <div class="nav-section-label">AI CAREER TOOLS</div>
                 <a href="#cover-letter" class="nav-item" data-view="cover-letter">
                     <i class="fa-solid fa-envelope-open-text"></i>
                     <span>Cover Letter AI</span>
@@ -45,6 +48,12 @@
                     <i class="fa-solid fa-file-invoice"></i>
                     <span>Resume Templates</span>
                 </a>
+                <a href="#compare" class="nav-item" data-view="compare">
+                    <i class="fa-solid fa-code-compare"></i>
+                    <span>Resume Comparison</span>
+                </a>
+
+                <div class="nav-section-label">AUDIT & ANALYZERS</div>
                 <a href="#linkedin" class="nav-item" data-view="linkedin">
                     <i class="fa-brands fa-linkedin"></i>
                     <span>LinkedIn Analyzer</span>
@@ -53,13 +62,12 @@
                     <i class="fa-brands fa-github"></i>
                     <span>GitHub Analyzer</span>
                 </a>
+
+                <div class="nav-section-label">ENTERPRISE</div>
                 <a href="#recruiter" class="nav-item" data-view="recruiter">
                     <i class="fa-solid fa-users-gear"></i>
                     <span>Recruiter Dashboard</span>
-                </a>
-                <a href="#profile" class="nav-item" data-view="profile">
-                    <i class="fa-solid fa-user-tie"></i>
-                    <span>Career Profile</span>
+                    <span class="nav-badge-pro">PRO</span>
                 </a>
             </nav>
             <div class="user-status-card">
@@ -93,10 +101,11 @@
 
             <!-- Dashboard View -->
             <section id="view-dashboard" class="content-view active">
-                <div class="welcome-banner">
+                <div class="welcome-banner mb-4">
                     <div class="welcome-text">
-                        <h2>Welcome Back, <span id="welcome-name">Guest User</span>!</h2>
-                        <p>Analyze your resume, extract key details, and build your career profile without API keys.</p>
+                        <div class="welcome-tag mb-2"><i class="fa-solid fa-wand-magic-sparkles"></i> All-in-One Career Platform</div>
+                        <h2>Welcome to RESUME<span>AI</span>, <span id="welcome-name">Guest User</span>!</h2>
+                        <p>Analyze your resume, extract key details, calculate ATS score, generate cover letters, and build your career profile 100% offline.</p>
                     </div>
                     <div class="welcome-stats">
                         <div class="stat-circle">
@@ -106,7 +115,73 @@
                     </div>
                 </div>
 
-                <div class="stats-grid">
+                <!-- How It Works Quick 3-Step Guide -->
+                <div class="quick-start-guide mb-4">
+                    <div class="guide-header mb-3">
+                        <h4><i class="fa-solid fa-compass text-primary"></i> How to Use This Platform (Quick 3-Step Guide)</h4>
+                    </div>
+                    <div class="guide-steps-grid">
+                        <div class="step-card">
+                            <div class="step-num">1</div>
+                            <div class="step-content">
+                                <h5>Upload Your Resume</h5>
+                                <p>Upload your PDF or DOCX resume below to parse skills, experience, and calculate your instant ATS score.</p>
+                            </div>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-num">2</div>
+                            <div class="step-content">
+                                <h5>Use AI Career Tools</h5>
+                                <p>Generate tailored cover letters, preview 5 resume template layouts, and audit your LinkedIn & GitHub profiles.</p>
+                            </div>
+                        </div>
+                        <div class="step-card">
+                            <div class="step-num">3</div>
+                            <div class="step-content">
+                                <h5>Compare & Benchmark</h5>
+                                <p>Track resume versions side-by-side or switch to Recruiter Mode for bulk candidate screening.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Shortcuts -->
+                <div class="shortcuts-grid mb-4">
+                    <div class="shortcut-card" onclick="document.getElementById('drop-zone').scrollIntoView({behavior: 'smooth'});">
+                        <div class="shortcut-icon icon-purple"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <div class="shortcut-text">
+                            <h4>Upload Resume</h4>
+                            <p>Parse ATS score & skills</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
+                    </div>
+                    <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'cover-letter\']').click();">
+                        <div class="shortcut-icon icon-cyan"><i class="fa-solid fa-envelope-open-text"></i></div>
+                        <div class="shortcut-text">
+                            <h4>AI Cover Letter</h4>
+                            <p>Create tailored application</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
+                    </div>
+                    <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'templates\']').click();">
+                        <div class="shortcut-icon icon-green"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="shortcut-text">
+                            <h4>Resume Templates</h4>
+                            <p>5 Professional layouts</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
+                    </div>
+                    <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'recruiter\']').click();">
+                        <div class="shortcut-icon icon-indigo"><i class="fa-solid fa-users-gear"></i></div>
+                        <div class="shortcut-text">
+                            <h4>Recruiter Dashboard</h4>
+                            <p>Bulk screening & ranking</p>
+                        </div>
+                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
+                    </div>
+                </div>
+
+                <div class="stats-grid mb-4">
                     <div class="stat-card">
                         <div class="stat-icon purple"><i class="fa-solid fa-file-pdf"></i></div>
                         <div class="stat-data">

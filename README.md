@@ -1,8 +1,8 @@
 # AI Resume Analyzer & Career Assistant
 
-🌐 **Live Application Link**: [https://resume-analyzer-ai-bvpv.onrender.com]
+🌐 **Live Application**: [https://resume-analyzer-ai-bvpv.onrender.com](https://resume-analyzer-ai-bvpv.onrender.com)
 
-An AI-powered, 100% offline resume analysis platform built with Spring Boot and modern Vanilla JavaScript. Parse PDF and DOCX resumes, extract candidate profiles, audit ATS readiness, run job description matching, check writing grammar, track resume history with version control, and download comprehensive career reports without external API keys.
+An AI-powered, 100% offline-first resume analysis and career platform built with **Spring Boot 3.3.1 (Java 21)** and modern **Vanilla JavaScript**. Parse PDF and DOCX resumes, extract candidate profiles, audit ATS readiness, run job description matching, check writing grammar, track resume version history, generate tailored cover letters, render 5 professional resume templates, audit LinkedIn/GitHub profiles, screen candidates in bulk with the Recruiter Dashboard, and download comprehensive career reports without requiring external API keys.
 
 ---
 
@@ -19,7 +19,7 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 - Supports inline profile management (add/remove skills, education, work experience, projects).
 - Persists user career profile state locally in an embedded **H2 Database**.
 
-### 🛡️ 3. Resume Strength Report (Phase 5)
+### 🛡️ 3. Resume Strength Report
 - **Resume Strengths**: Evaluates word count suitability, skill density, complete contact headers, web presence, quantifiable metrics, and readability scanning.
 - **Weaknesses**: Identifies word count anomalies, passive voice usage, weak verb phrasing (e.g. "responsible for"), missing summaries, and multi-column layout pipe clutter.
 - **Missing Sections**: Audits standard resume headers (Summary, Work Experience, Skills, Education, Projects, Certifications, Achievements).
@@ -27,21 +27,21 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 - **Resume Rating**: Calculates overall resume score out of 100 with letter grades (`A+ / Exceptional`, `A / Outstanding`, `B+ / Strong`, `B / Good`, `C / Fair`).
 - **Improvement Suggestions**: Actionable recommendations categorized by section.
 
-### ✍️ 4. Grammar & Writing Checker (Phase 5)
+### ✍️ 4. Grammar & Writing Checker
 - **Grammar Errors**: Checks spacing anomalies (double spaces), missing bullet point closing periods, and article misuses ("a" vs "an").
 - **Spelling Mistakes**: Scans technical and dictionary terms for typos and provides correction cards.
 - **Readability Level**: Computes Flesch-Kincaid index, reading complexity level, and grade level assessment.
 - **Writing Style**: Audits action verbs count vs passive voice constructs and rates overall style.
-- **Professional Language & Tone**: Checks casual vocabulary (e.g., "cool", "stuff", "basically"), formal tone grade, and replacement suggestions.
+- **Professional Language & Tone**: Checks casual vocabulary, formal tone grade, and replacement suggestions.
 - **Sentence Structure**: Measures average sentence length, total sentences, run-on sentence warnings, and flow rating.
 
-### 📜 5. Resume History & Version Control (Phase 5)
+### 📜 5. Resume History & Version Control
 - **Stored Uploaded Resumes**: Complete list of uploaded files, formats, file sizes, and parsing status.
 - **Resume Versions**: Automatically tracks version badges (`v1.0`, `v2.0`, `v3.0`, etc.) based on upload sequence.
 - **Upload Dates**: Displays precise upload timestamps.
 - **View History**: Click "View Report" on any historical resume to launch the 8-tab Report Drawer Modal.
 - **Delete Resume**: Single-click deletion that removes the database entry and deletes the local file from disk.
-- **Download Previous Reports**: Download Strength, Grammar, ATS, or AI reports directly in JSON/TXT format.
+- **Download Reports**: Download Strength, Grammar, ATS, or AI reports directly in JSON/TXT format.
 
 ### 🎯 6. Job Description Matching & ATS Checker
 - Paste or upload Job Description (`.txt`) files to compute **Resume Match Percentage**.
@@ -50,14 +50,10 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 - Evaluates ATS formatting, structure, and keyword density.
 
 ### 💡 7. AI Suggestions & Advanced Skills Analysis
-- **AI Suggestions**: Provides recommendations across Summary, Experience, Projects, Skills, Education, Certifications, Achievements, Action Verbs, Keywords, and Industry Improvements.
-- **Skills Analysis**: Categorizes skills into Languages, Frameworks, Databases, Cloud, DevOps, AI/ML, Tools, and Soft Skills. Displays skill distribution charts, strength progress graphs, missing gaps, and next-step recommendations.
+- **AI Suggestions**: Recommendations across Summary, Experience, Projects, Skills, Education, Certifications, Achievements, Action Verbs, Keywords, and Industry Improvements.
+- **Skills Analysis**: Categorizes skills into Languages, Frameworks, Databases, Cloud, DevOps, AI/ML, Tools, and Soft Skills. Displays skill distribution charts, strength progress graphs, missing gaps, and recommendations.
 
-### 🔍 8. Real-Time Search & Theme Toggle
-- **Top Navbar Search**: Real-time filtering across uploaded filenames, parsing status, skills, and education.
-- **Light & Dark Mode**: Persistent theme switching with custom space-obsidian and deep indigo dark mode styles.
-
-### ⚖️ 9. Resume Version Comparison (Feature 13)
+### ⚖️ 8. Resume Version Comparison (Feature 13)
 - Compare two resume versions side-by-side (Resume Version 1 vs Resume Version 2).
 - Generates:
   - **ATS Score Delta**: Score improvement from Version 1 to Version 2 (`+15%`).
@@ -66,7 +62,11 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
   - **Keyword Difference**: New keywords identified vs removed keywords.
   - **Improvement Rate**: Overall optimization score growth percentage.
 
-### 🎨 11. Resume Templates (Feature 17)
+### ✉️ 9. AI Cover Letter Generator (Feature 14)
+- Craft tailored, high-converting professional cover letters aligned with your selected source resume, target company name, job role, and target job description.
+- Instant 1-click **Copy to Clipboard** and **Download Cover Letter** functionality.
+
+### 🎨 10. Resume Templates & Visual Builder (Feature 17)
 - Generate & preview resumes in **5 distinct professional layouts**:
   1. **ATS Friendly Resume**: Simple single-column layout optimized for ATS parsing.
   2. **Professional Resume**: Corporate-style design with strong section hierarchy.
@@ -76,25 +76,29 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 - Switch between templates live without losing resume data.
 - Export as standalone HTML, copy formatted text, or print to PDF.
 
-### 💼 12. LinkedIn Profile Analyzer (Feature 18)
+### 💼 11. LinkedIn Profile Analyzer (Feature 18)
 - Comprehensive LinkedIn audit analyzing Profile Completeness, Headline positioning, About section, Skills density, Experience metrics, and Certifications.
 - Calculates **LinkedIn Score out of 100** with category breakdown.
-- Provides actionable, highly specific improvement suggestions (e.g., headline keyword additions, metric formatting).
+- Actionable improvement suggestions (e.g., headline keyword additions, metric formatting).
 
-### 🐙 13. GitHub Profile Analyzer (Feature 19)
+### 🐙 12. GitHub Profile Analyzer (Feature 19)
 - Integrates with live GitHub REST API v3 to retrieve repositories, languages, stars, forks, and followers.
 - Evaluates Repository Quality, Programming Language diversity, Commit Activity, Contribution Impact, and Documentation Quality.
-- Calculates **GitHub Score out of 100** with category breakdown.
-- Graceful API rate-limit and offline fallback handling.
-- Provides tailored recommendations (e.g. adding READMEs, pinning top 4-6 projects, adding demo links, archiving test repos).
+- Calculates **GitHub Score out of 100** with category breakdown and offline fallback handling.
 
-### 👥 14. Recruiter Candidate Screening Dashboard
-- **Bulk Resume Upload**: Upload multiple candidate PDF/DOC/DOCX resumes simultaneously with fault-tolerant individual file processing and live batch progress tracking.
+### 👥 13. Recruiter Candidate Screening Dashboard (Enterprise Upgrade)
+- **Bulk Resume Upload**: Upload multiple candidate PDF/DOC/DOCX resumes simultaneously with fault-tolerant processing and live batch progress.
 - **Candidate Ranking**: Automatic candidate ranking by ATS score descending (#1, #2, #3...).
-- **Multi-Criteria Filtering**: Filter candidates dynamically by Skill substring, Min/Max Experience years, Education Degree level (PhD, Master's, Bachelor's, Associate), ATS Score range (80-100, 60-79, 40-59, <40), and Shortlist status.
-- **Shortlist Persistence**: Shortlist/unshortlist candidates with database persistence in `uploaded_resumes`.
+- **Multi-Criteria Filtering**: Filter candidates dynamically by Skill substring, Min/Max Experience years, Education Degree level, ATS Score range, and Shortlist status.
+- **Shortlist Persistence**: Shortlist candidates with H2 database column persistence.
 - **Side-by-Side Comparison**: Select multiple candidates to compare ATS scores, skills, experience, education, strengths, and weaknesses side-by-side.
 - **Evaluation Report Downloads**: Download comprehensive candidate evaluation reports as text documents.
+
+### 🎨 14. Redesigned Modern UI & Onboarding Guide (Phase 10)
+- **Categorized Sidebar Menu**: Grouped into `MAIN PLATFORM`, `AI CAREER TOOLS`, `AUDIT & ANALYZERS`, and `ENTERPRISE` (`PRO`).
+- **3-Step Onboarding Guide**: Easy-to-understand visual walkthrough on opening dashboard.
+- **1-Click Quick Action Shortcuts**: Instant shortcut cards to Upload Resume, AI Cover Letter, Resume Templates, and Recruiter Dashboard.
+- **Theme Contrast & Polish**: Dark/light mode theme toggle, card elevation, hover transitions, and responsive layout.
 
 ---
 
@@ -173,6 +177,7 @@ An AI-powered, 100% offline resume analysis platform built with Spring Boot and 
 
 ## 📊 Project Status
 
-- **Current Status**: **Phase 8 Completed**
-- **Offline Engine**: 100% functional.
-- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, **Resume Comparison (Feature 13)**, **AI Cover Letter Generator (Feature 14)**, **Resume Templates (Feature 17)**, **LinkedIn Profile Analyzer (Feature 18)**, and **GitHub Profile Analyzer (Feature 19)**.
+- **Current Status**: **Fully Featured & Production Ready**
+- **Live Deployment**: [https://resume-analyzer-ai-bvpv.onrender.com](https://resume-analyzer-ai-bvpv.onrender.com)
+- **Offline Engine**: 100% functional without external API key dependencies.
+- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, **Resume Comparison**, **AI Cover Letter Generator**, **5 Resume Templates**, **LinkedIn Profile Analyzer**, **GitHub Profile Analyzer**, **Recruiter Dashboard (Bulk Upload & Screening)**, and **Redesigned Modern UI/UX**.

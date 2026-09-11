@@ -153,20 +153,29 @@ async function loadResumes() {
 // PROFILE UI & BINDING
 // ----------------------------------------------------
 function updateProfileUI() {
-    const prof = state.profile;
+    const prof = state.profile || {};
 
     // Set Welcome Display & Top Header to Guest User consistently
     const firstName = prof.fullName ? prof.fullName.split(' ')[0] : 'Guest';
-    document.getElementById('welcome-name').textContent = firstName || 'Guest User';
-    document.getElementById('user-display-name').textContent = 'Guest User';
+    const welcomeNameEl = document.getElementById('welcome-name');
+    if (welcomeNameEl) welcomeNameEl.textContent = firstName || 'Guest User';
+
+    const userDisplayNameEl = document.getElementById('user-display-name');
+    if (userDisplayNameEl) userDisplayNameEl.textContent = 'Guest User';
 
     // Form inputs
-    document.getElementById('prof-name').value = prof.fullName || '';
-    document.getElementById('prof-email').value = prof.email || '';
-    document.getElementById('prof-phone').value = prof.phone || '';
-    document.getElementById('prof-linkedin').value = prof.linkedinUrl || '';
-    document.getElementById('prof-github').value = prof.githubUrl || '';
-    document.getElementById('prof-portfolio').value = prof.portfolioUrl || '';
+    const profName = document.getElementById('prof-name');
+    if (profName) profName.value = prof.fullName || '';
+    const profEmail = document.getElementById('prof-email');
+    if (profEmail) profEmail.value = prof.email || '';
+    const profPhone = document.getElementById('prof-phone');
+    if (profPhone) profPhone.value = prof.phone || '';
+    const profLinkedin = document.getElementById('prof-linkedin');
+    if (profLinkedin) profLinkedin.value = prof.linkedinUrl || '';
+    const profGithub = document.getElementById('prof-github');
+    if (profGithub) profGithub.value = prof.githubUrl || '';
+    const profPortfolio = document.getElementById('prof-portfolio');
+    if (profPortfolio) profPortfolio.value = prof.portfolioUrl || '';
 
     // Render list sections
     renderSkillsTags();
@@ -309,14 +318,18 @@ function renderProjectsCards() {
 
 // Stats & Completion Calculator
 function updateStats() {
+    if (!state.resumes) state.resumes = [];
     const total = state.resumes.length;
     const parsed = state.resumes.filter(r => r.parseStatus === 'SUCCESS').length;
     
-    document.getElementById('stat-total-resumes').textContent = total;
-    document.getElementById('stat-parsed-ok').textContent = parsed;
+    const statTotal = document.getElementById('stat-total-resumes');
+    if (statTotal) statTotal.textContent = total;
+    
+    const statParsed = document.getElementById('stat-parsed-ok');
+    if (statParsed) statParsed.textContent = parsed;
 
     // Calculate profile completeness
-    const prof = state.profile;
+    const prof = state.profile || {};
     let fields = 0;
     let filled = 0;
 
@@ -337,7 +350,8 @@ function updateStats() {
     fields += 1; if (proj.length > 0) filled++;
 
     const percentage = Math.round((filled / fields) * 100);
-    document.getElementById('stat-profile-comp').textContent = `${percentage}%`;
+    const statComp = document.getElementById('stat-profile-comp');
+    if (statComp) statComp.textContent = `${percentage}%`;
 
     // Dynamic ATS rating based on completeness and parsed values
     let atsRating = '--';
@@ -354,7 +368,8 @@ function updateStats() {
         // Cap at 95 for mock offline checker
         atsRating = Math.min(base, 95);
     }
-    document.getElementById('stat-ats-score').textContent = atsRating;
+    const statAts = document.getElementById('stat-ats-score');
+    if (statAts) statAts.textContent = atsRating;
 }
 
 // ----------------------------------------------------
@@ -378,90 +393,94 @@ function updateResumesUI(filterQuery = '') {
     const filteredResumes = state.resumes.filter(matchesQuery);
 
     // 1. Dashboard View (Recent 3 Resumes matching filter)
-    recentContainer.innerHTML = '';
-    const recents = filteredResumes.slice(0, 3);
-    
-    if (recents.length === 0) {
-        recentContainer.innerHTML = `
-            <div class="empty-state">
-                <i class="fa-solid fa-folder-open"></i>
-                <p>${cleanQuery ? 'No matching resumes found.' : 'No resumes uploaded yet.'}</p>
-            </div>`;
-    } else {
-        recents.forEach(resume => {
-            const item = document.createElement('div');
-            item.className = 'recent-item';
-            
-            const fileIcon = getFileIconClass(resume.fileType);
-            const statusClass = resume.parseStatus.toLowerCase();
-            const uploadTimeStr = formatDate(resume.uploadDate);
+    if (recentContainer) {
+        recentContainer.innerHTML = '';
+        const recents = filteredResumes.slice(0, 3);
+        
+        if (recents.length === 0) {
+            recentContainer.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <p>${cleanQuery ? 'No matching resumes found.' : 'No resumes uploaded yet.'}</p>
+                </div>`;
+        } else {
+            recents.forEach(resume => {
+                const item = document.createElement('div');
+                item.className = 'recent-item';
+                
+                const fileIcon = getFileIconClass(resume.fileType);
+                const statusClass = resume.parseStatus.toLowerCase();
+                const uploadTimeStr = formatDate(resume.uploadDate);
 
-            item.innerHTML = `
-                <div class="item-left">
-                    <i class="${fileIcon} item-icon"></i>
-                    <div class="item-meta">
-                        <h5>${escapeHtml(resume.fileName)}</h5>
-                        <p>${uploadTimeStr} | ${(resume.fileSize / 1024).toFixed(1)} KB</p>
+                item.innerHTML = `
+                    <div class="item-left">
+                        <i class="${fileIcon} item-icon"></i>
+                        <div class="item-meta">
+                            <h5>${escapeHtml(resume.fileName)}</h5>
+                            <p>${uploadTimeStr} | ${(resume.fileSize / 1024).toFixed(1)} KB</p>
+                        </div>
                     </div>
-                </div>
-                <div class="item-right">
-                    <span class="status-badge ${statusClass}">${resume.parseStatus}</span>
-                    <button class="btn btn-sm btn-outline" onclick="viewResumeDetails(${resume.id})">Report</button>
-                </div>
-            `;
-            recentContainer.appendChild(item);
-        });
+                    <div class="item-right">
+                        <span class="status-badge ${statusClass}">${resume.parseStatus}</span>
+                        <button class="btn btn-sm btn-outline" onclick="viewResumeDetails(${resume.id})">Report</button>
+                    </div>
+                `;
+                recentContainer.appendChild(item);
+            });
+        }
     }
 
     // 2. Full History View Table (matching filter)
-    tableBody.innerHTML = '';
-    if (filteredResumes.length === 0) {
-        tableBody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center py-5">
-                    <i class="fa-solid fa-folder-open" style="font-size: 2rem; opacity: 0.3; display: block; margin-bottom: 0.5rem;"></i>
-                    ${cleanQuery ? 'No resumes match your search query "' + escapeHtml(cleanQuery) + '".' : 'No resumes found. Go to the dashboard to upload your first resume!'}
-                </td>
-            </tr>`;
-    } else {
-        // Compute version numbers based on chronological order (oldest = v1.0, newest = vN.0)
-        // state.resumes is ordered by uploadDate DESC, so length - index gives chronological version
-        filteredResumes.forEach((resume, idx) => {
-            const tr = document.createElement('tr');
-            const fileIcon = getFileIconClass(resume.fileType);
-            const statusClass = resume.parseStatus.toLowerCase();
-            
-            // Version tag computation
-            const totalCount = state.resumes.length;
-            const originalIndex = state.resumes.findIndex(r => r.id === resume.id);
-            const versionNum = originalIndex !== -1 ? (totalCount - originalIndex) : (filteredResumes.length - idx);
-            const versionTag = `v${versionNum}.0`;
+    if (tableBody) {
+        tableBody.innerHTML = '';
+        if (filteredResumes.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="fa-solid fa-folder-open" style="font-size: 2rem; opacity: 0.3; display: block; margin-bottom: 0.5rem;"></i>
+                        ${cleanQuery ? 'No resumes match your search query "' + escapeHtml(cleanQuery) + '".' : 'No resumes found. Go to the dashboard to upload your first resume!'}
+                    </td>
+                </tr>`;
+        } else {
+            // Compute version numbers based on chronological order (oldest = v1.0, newest = vN.0)
+            // state.resumes is ordered by uploadDate DESC, so length - index gives chronological version
+            filteredResumes.forEach((resume, idx) => {
+                const tr = document.createElement('tr');
+                const fileIcon = getFileIconClass(resume.fileType);
+                const statusClass = resume.parseStatus.toLowerCase();
+                
+                // Version tag computation
+                const totalCount = state.resumes.length;
+                const originalIndex = state.resumes.findIndex(r => r.id === resume.id);
+                const versionNum = originalIndex !== -1 ? (totalCount - originalIndex) : (filteredResumes.length - idx);
+                const versionTag = `v${versionNum}.0`;
 
-            tr.innerHTML = `
-                <td>
-                    <span style="display: inline-flex; align-items: center; gap: 0.6rem;">
-                        <i class="${fileIcon}" style="color: var(--primary); font-size: 1.1rem;"></i>
-                        <strong>${escapeHtml(resume.fileName)}</strong>
-                    </span>
-                </td>
-                <td><span class="version-badge"><i class="fa-solid fa-code-branch"></i> ${versionTag}</span></td>
-                <td>${formatDate(resume.uploadDate)}</td>
-                <td>${(resume.fileSize / 1024).toFixed(1)} KB</td>
-                <td><span class="status-badge ${statusClass}">${resume.parseStatus}</span></td>
-                <td class="actions">
-                    <button class="btn btn-sm btn-outline" onclick="viewResumeDetails(${resume.id})">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i> View Report
-                    </button>
-                    <button class="btn btn-sm btn-primary" onclick="downloadReport(${resume.id}, 'strength')" title="Download Report">
-                        <i class="fa-solid fa-download"></i> Download
-                    </button>
-                    <button class="btn-danger-icon" onclick="deleteResume(${resume.id})" title="Delete File">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </td>
-            `;
-            tableBody.appendChild(tr);
-        });
+                tr.innerHTML = `
+                    <td>
+                        <span style="display: inline-flex; align-items: center; gap: 0.6rem;">
+                            <i class="${fileIcon}" style="color: var(--primary); font-size: 1.1rem;"></i>
+                            <strong>${escapeHtml(resume.fileName)}</strong>
+                        </span>
+                    </td>
+                    <td><span class="version-badge"><i class="fa-solid fa-code-branch"></i> ${versionTag}</span></td>
+                    <td>${formatDate(resume.uploadDate)}</td>
+                    <td>${(resume.fileSize / 1024).toFixed(1)} KB</td>
+                    <td><span class="status-badge ${statusClass}">${resume.parseStatus}</span></td>
+                    <td class="actions">
+                        <button class="btn btn-sm btn-outline" onclick="viewResumeDetails(${resume.id})">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i> View Report
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="downloadReport(${resume.id}, 'strength')" title="Download Report">
+                            <i class="fa-solid fa-download"></i> Download
+                        </button>
+                        <button class="btn-danger-icon" onclick="deleteResume(${resume.id})" title="Delete File">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
     }
 }
 
@@ -1634,17 +1653,17 @@ function populateDropdowns() {
     const v1Select = document.getElementById('compare-v1-select');
     const v2Select = document.getElementById('compare-v2-select');
     const clSelect = document.getElementById('cl-resume-select');
+    const tmplSelect = document.getElementById('tmpl-source-select');
 
     if (!state.resumes || state.resumes.length === 0) {
         if (v1Select) v1Select.innerHTML = '<option value="">No uploaded resumes found</option>';
         if (v2Select) v2Select.innerHTML = '<option value="">No uploaded resumes found</option>';
         if (clSelect) clSelect.innerHTML = '<option value="">No uploaded resumes found</option>';
+        if (tmplSelect) tmplSelect.innerHTML = '<option value="profile">Use Active Career Profile Data</option>';
         return;
     }
 
     const totalCount = state.resumes.length;
-
-    const tmplSelect = document.getElementById('tmpl-source-select');
 
     let optionsHtml = '<option value="">Select a resume version...</option>';
     let tmplOptionsHtml = '<option value="profile">Use Active Career Profile Data</option>';
@@ -1659,28 +1678,29 @@ function populateDropdowns() {
     if (v1Select) {
         const val1 = v1Select.value;
         v1Select.innerHTML = optionsHtml;
-        if (val1) v1Select.value = val1;
+        if (val1 && state.resumes.some(r => r.id == val1)) v1Select.value = val1;
         else if (state.resumes.length >= 2) v1Select.value = state.resumes[state.resumes.length - 1].id;
+        else if (state.resumes.length >= 1) v1Select.value = state.resumes[0].id;
     }
 
     if (v2Select) {
         const val2 = v2Select.value;
         v2Select.innerHTML = optionsHtml;
-        if (val2) v2Select.value = val2;
+        if (val2 && state.resumes.some(r => r.id == val2)) v2Select.value = val2;
         else if (state.resumes.length >= 1) v2Select.value = state.resumes[0].id;
     }
 
     if (clSelect) {
         const valCl = clSelect.value;
         clSelect.innerHTML = optionsHtml;
-        if (valCl) clSelect.value = valCl;
+        if (valCl && state.resumes.some(r => r.id == valCl)) clSelect.value = valCl;
         else if (state.resumes.length >= 1) clSelect.value = state.resumes[0].id;
     }
 
     if (tmplSelect) {
         const valTmpl = tmplSelect.value;
         tmplSelect.innerHTML = tmplOptionsHtml;
-        if (valTmpl) tmplSelect.value = valTmpl;
+        if (valTmpl && (valTmpl === 'profile' || state.resumes.some(r => r.id == valTmpl))) tmplSelect.value = valTmpl;
     }
 }
 
@@ -1689,8 +1709,10 @@ function initComparisonAndCoverLetter() {
     const btnCompare = document.getElementById('btn-run-comparison');
     if (btnCompare) {
         btnCompare.addEventListener('click', async () => {
-            const id1 = document.getElementById('compare-v1-select').value;
-            const id2 = document.getElementById('compare-v2-select').value;
+            const v1El = document.getElementById('compare-v1-select');
+            const v2El = document.getElementById('compare-v2-select');
+            const id1 = v1El ? v1El.value : '';
+            const id2 = v2El ? v2El.value : '';
 
             if (!id1 || !id2) {
                 showNotification('Please select two resume versions to compare.', 'warning');
@@ -1728,10 +1750,11 @@ function initComparisonAndCoverLetter() {
     const btnGenerateCL = document.getElementById('btn-generate-cover-letter');
     if (btnGenerateCL) {
         btnGenerateCL.addEventListener('click', async () => {
-            const resumeId = document.getElementById('cl-resume-select').value;
-            const companyName = document.getElementById('cl-company-name').value.trim();
-            const jobRole = document.getElementById('cl-job-role').value.trim();
-            const jobDescription = document.getElementById('cl-job-desc').value.trim();
+            const clSelectEl = document.getElementById('cl-resume-select');
+            const resumeId = clSelectEl ? clSelectEl.value : '';
+            const companyName = (document.getElementById('cl-company-name')?.value || '').trim();
+            const jobRole = (document.getElementById('cl-job-role')?.value || '').trim();
+            const jobDescription = (document.getElementById('cl-job-desc')?.value || '').trim();
 
             if (!resumeId) {
                 showNotification('Please select a source resume.', 'warning');
