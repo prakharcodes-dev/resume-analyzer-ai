@@ -336,6 +336,9 @@ public class ResumeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Missing jobDescription parameter.\"}");
         }
         String jdText = requestBody.get("jobDescription").asText();
+        if (jdText == null || jdText.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Job description text cannot be empty. Please provide a valid job description.\"}");
+        }
         UploadedResume resume = optionalResume.get();
         try {
             String rawText = getOrExtractRawText(resume);
@@ -375,6 +378,10 @@ public class ResumeController {
         }
         Long id1 = requestBody.get("id1").asLong();
         Long id2 = requestBody.get("id2").asLong();
+
+        if (id1.equals(id2)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Please select two different resume versions to compare.\"}");
+        }
 
         Optional<UploadedResume> opt1 = uploadedResumeRepository.findById(id1);
         Optional<UploadedResume> opt2 = uploadedResumeRepository.findById(id2);

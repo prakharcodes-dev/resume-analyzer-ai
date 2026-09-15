@@ -521,6 +521,11 @@ function initUpload() {
 
 function handleUpload(file) {
     // 1. Validation
+    if (!file || file.size === 0) {
+        showNotification('The selected file is empty (0 bytes). Please select a valid resume document.', 'warning');
+        return;
+    }
+
     const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
     if (!allowedTypes.includes(file.type)) {
         showNotification('Invalid file type! Please upload a PDF or DOCX file.', 'danger');
@@ -1758,6 +1763,10 @@ function initComparisonAndCoverLetter() {
 
             if (!resumeId) {
                 showNotification('Please select a source resume.', 'warning');
+                return;
+            }
+            if (!companyName || !jobRole) {
+                showNotification('Please enter both Target Company Name and Job Role.', 'warning');
                 return;
             }
 
