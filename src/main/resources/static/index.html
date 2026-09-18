@@ -206,6 +206,52 @@
                 </div>
 
                 <div class="dashboard-body">
+                    <!-- Analysis Completed Summary Card -->
+                    <div class="card analysis-summary-card mb-4" id="analysis-summary-card" style="display: none;">
+                        <div class="summary-card-header">
+                            <div class="summary-badge">
+                                <i class="fa-solid fa-circle-check text-success"></i>
+                                <span>Resume Analysis Completed</span>
+                            </div>
+                            <button class="btn-icon text-muted" id="btn-close-summary" title="Dismiss Summary" style="background: none; border: none; cursor: pointer; font-size: 1.1rem;">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <div class="summary-card-body">
+                            <div class="summary-score-box">
+                                <div class="score-circle-large" id="summary-score-circle">--</div>
+                                <div class="score-meta">
+                                    <h4>ATS Match Score</h4>
+                                    <p id="summary-filename-text">resume.pdf</p>
+                                    <span class="badge badge-success" id="summary-rating-badge">Excellent</span>
+                                </div>
+                            </div>
+                            <div class="summary-details">
+                                <div class="summary-detail-item">
+                                    <h5 class="text-muted mb-1" style="font-size: 0.85rem; font-weight: 600;"><i class="fa-solid fa-screwdriver-wrench text-primary"></i> Extracted & Matched Skills</h5>
+                                    <div class="skills-tags-container" id="summary-matched-skills">
+                                        <!-- Dynamic skill tags -->
+                                    </div>
+                                </div>
+                                <div class="summary-detail-item mt-3">
+                                    <h5 class="text-muted mb-1" style="font-size: 0.85rem; font-weight: 600;"><i class="fa-solid fa-briefcase text-secondary"></i> Identified Role</h5>
+                                    <span class="role-badge" id="summary-role-badge">Software Engineer</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="summary-card-footer">
+                            <button class="btn btn-primary btn-sm" id="btn-summary-view-report">
+                                <i class="fa-solid fa-chart-pie"></i> View Full Report
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="btn-summary-cover-letter">
+                                <i class="fa-solid fa-envelope-open-text"></i> AI Cover Letter
+                            </button>
+                            <button class="btn btn-outline btn-sm" id="btn-summary-templates">
+                                <i class="fa-solid fa-file-invoice"></i> Resume Templates
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Resume Upload Section -->
                     <div class="card upload-card">
                         <div class="card-header">

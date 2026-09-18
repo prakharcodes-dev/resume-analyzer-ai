@@ -526,14 +526,19 @@ function handleUpload(file) {
         return;
     }
 
+    const fileNameLower = (file.name || '').toLowerCase();
+    const validExt = fileNameLower.endsWith('.pdf') || fileNameLower.endsWith('.docx') || fileNameLower.endsWith('.doc');
     const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
-    if (!allowedTypes.includes(file.type)) {
-        showNotification('Invalid file type! Please upload a PDF or DOCX file.', 'danger');
+    const validMime = file.type && allowedTypes.includes(file.type);
+
+    if (!validExt && !validMime) {
+        showNotification('Invalid file format! Please upload a PDF (.pdf) or Word document (.docx / .doc).', 'danger');
         return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-        showNotification('File is too large! Maximum limit is 10MB.', 'danger');
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        showNotification(`File size (${sizeMb} MB) exceeds the maximum allowed limit of 10MB. Please select a smaller file.`, 'danger');
         return;
     }
 
@@ -553,7 +558,7 @@ function handleUpload(file) {
     progressContainer.style.display = 'block';
 
     const fileIcon = document.getElementById('upload-file-icon');
-    fileIcon.className = getFileIconClass(file.type);
+    fileIcon.className = getFileIconClass(file.type || (fileNameLower.endsWith('.pdf') ? 'application/pdf' : 'application/msword'));
 
     // 3. Perform AJAX Upload
     const formData = new FormData();
@@ -584,11 +589,19 @@ function handleUpload(file) {
             
             showNotification('Resume uploaded and parsed successfully!', 'success');
             
-            // Reload tables and profile dashboard
+            let uploadedResumeData = null;
+            try {
+                uploadedResumeData = JSON.parse(xhr.responseText);
+            } catch (e) {}
+
+            // Reload tables, profile dashboard, and render analysis summary
             setTimeout(() => {
                 progressContainer.style.display = 'none';
                 loadProfile();
                 loadResumes();
+                if (uploadedResumeData) {
+                    renderAnalysisSummaryCard(uploadedResumeData);
+                }
             }, 1000);
         } else {
             let errorMsg = 'Upload failed.';
@@ -607,6 +620,122 @@ function handleUpload(file) {
     };
 
     xhr.send(formData);
+}
+
+function renderAnalysisSummaryCard(resume) {
+    const summaryCard = document.getElementById('analysis-summary-card');
+    if (!summaryCard) return;
+
+    let parsed = {};
+    if (resume && resume.parsedContent) {
+        try {
+            parsed = typeof resume.parsedContent === 'string' ? JSON.parse(resume.parsedContent) : resume.parsedContent;
+        } catch(e) {}
+    }
+
+    const fileNameEl = document.getElementById('summary-filename-text');
+    if (fileNameEl) fileNameEl.textContent = resume.fileName || 'Uploaded Resume';
+
+    // Extract skills and calculate ATS score
+    const skills = parsed.skills || parseJsonField(state.profile.skills) || [];
+    const exp = parsed.experience || parseJsonField(state.profile.experience) || [];
+    const edu = parsed.education || parseJsonField(state.profile.education) || [];
+    const proj = parsed.projects || parseJsonField(state.profile.projects) || [];
+
+    let base = 60;
+    if (skills.length > 5) base += 15;
+    else if (skills.length > 0) base += 8;
+    if (exp.length > 0) base += 12;
+    if (edu.length > 0) base += 8;
+    if (proj.length > 0) base += 5;
+    const score = Math.min(base, 95);
+
+    const scoreCircle = document.getElementById('summary-score-circle');
+    if (scoreCircle) scoreCircle.textContent = score;
+
+    const ratingBadge = document.getElementById('summary-rating-badge');
+    if (ratingBadge) {
+        if (score >= 85) {
+            ratingBadge.textContent = 'Excellent ATS Match';
+            ratingBadge.className = 'badge badge-success';
+        } else if (score >= 70) {
+            ratingBadge.textContent = 'Strong ATS Match';
+            ratingBadge.className = 'badge badge-primary';
+        } else {
+            ratingBadge.textContent = 'Needs Improvement';
+            ratingBadge.className = 'badge badge-warning';
+        }
+    }
+
+    const skillsContainer = document.getElementById('summary-matched-skills');
+    if (skillsContainer) {
+        skillsContainer.innerHTML = '';
+        if (skills.length === 0) {
+            skillsContainer.innerHTML = '<span class="text-muted" style="font-size: 0.82rem;">No specific skills extracted.</span>';
+        } else {
+            skills.slice(0, 8).forEach(sk => {
+                const tag = document.createElement('span');
+                tag.className = 'skill-tag-sm';
+                tag.textContent = typeof sk === 'string' ? sk : (sk.name || sk.skillName || JSON.stringify(sk));
+                skillsContainer.appendChild(tag);
+            });
+            if (skills.length > 8) {
+                const tag = document.createElement('span');
+                tag.className = 'skill-tag-sm tag-more';
+                tag.textContent = `+${skills.length - 8} more`;
+                skillsContainer.appendChild(tag);
+            }
+        }
+    }
+
+    const roleBadge = document.getElementById('summary-role-badge');
+    if (roleBadge) {
+        let detectedRole = 'Professional';
+        if (parsed.detectedRole) {
+            detectedRole = parsed.detectedRole;
+        } else if (exp.length > 0 && exp[0].jobTitle) {
+            detectedRole = exp[0].jobTitle;
+        } else if (skills.some(s => (typeof s === 'string' ? s : '').toLowerCase().includes('java'))) {
+            detectedRole = 'Java Developer';
+        } else if (skills.some(s => (typeof s === 'string' ? s : '').toLowerCase().includes('python'))) {
+            detectedRole = 'Python Data Engineer';
+        }
+        roleBadge.textContent = detectedRole;
+    }
+
+    // Bind action buttons
+    const btnViewReport = document.getElementById('btn-summary-view-report');
+    if (btnViewReport) {
+        btnViewReport.onclick = () => {
+            if (resume && resume.id) viewResumeDetails(resume.id);
+        };
+    }
+
+    const btnCoverLetter = document.getElementById('btn-summary-cover-letter');
+    if (btnCoverLetter) {
+        btnCoverLetter.onclick = () => {
+            const clNav = document.querySelector('.nav-item[data-view="cover-letter"]');
+            if (clNav) clNav.click();
+        };
+    }
+
+    const btnTemplates = document.getElementById('btn-summary-templates');
+    if (btnTemplates) {
+        btnTemplates.onclick = () => {
+            const tmplNav = document.querySelector('.nav-item[data-view="templates"]');
+            if (tmplNav) tmplNav.click();
+        };
+    }
+
+    const btnClose = document.getElementById('btn-close-summary');
+    if (btnClose) {
+        btnClose.onclick = () => {
+            summaryCard.style.display = 'none';
+        };
+    }
+
+    summaryCard.style.display = 'block';
+    summaryCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ----------------------------------------------------
