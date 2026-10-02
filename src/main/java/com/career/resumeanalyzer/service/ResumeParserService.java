@@ -35,15 +35,20 @@ public class ResumeParserService {
      * Extracts raw text directly from a MultipartFile.
      */
     public String extractRawText(MultipartFile file) throws IOException {
+        String text = "";
         String contentType = file.getContentType();
         if (contentType != null && contentType.equals("application/pdf")) {
-            return extractTextFromPdf(file.getBytes());
+            text = extractTextFromPdf(file.getBytes());
         } else if (contentType != null && (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
                 || contentType.equals("application/msword"))) {
-            return extractTextFromDocx(file.getInputStream());
+            text = extractTextFromDocx(file.getInputStream());
         } else {
             throw new IllegalArgumentException("Unsupported file type. Please upload a PDF or DOCX file.");
         }
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException("No readable text could be extracted from this document. Please ensure the file is not empty or password-protected.");
+        }
+        return text;
     }
 
     /**
@@ -54,16 +59,21 @@ public class ResumeParserService {
         if (!file.exists()) {
             throw new java.io.FileNotFoundException("File not found at: " + filePath);
         }
+        String text = "";
         if (contentType != null && contentType.equals("application/pdf")) {
-            return extractTextFromPdf(java.nio.file.Files.readAllBytes(file.toPath()));
+            text = extractTextFromPdf(java.nio.file.Files.readAllBytes(file.toPath()));
         } else if (contentType != null && (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
                 || contentType.equals("application/msword"))) {
             try (java.io.InputStream is = java.nio.file.Files.newInputStream(file.toPath())) {
-                return extractTextFromDocx(is);
+                text = extractTextFromDocx(is);
             }
         } else {
             throw new IllegalArgumentException("Unsupported file type: " + contentType);
         }
+        if (text == null || text.trim().isEmpty()) {
+            throw new IllegalArgumentException("No readable text could be extracted from file: " + filePath);
+        }
+        return text;
     }
 
     private String extractTextFromPdf(byte[] bytes) throws IOException {

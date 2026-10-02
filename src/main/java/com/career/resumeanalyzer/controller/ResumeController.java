@@ -50,20 +50,25 @@ public class ResumeController {
 
     @PostMapping("/upload")
     public ResponseEntity<?> uploadResume(@RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty. Please select a file.");
+        if (file == null || file.isEmpty() || file.getSize() == 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Selected file is empty (0 bytes). Please upload a valid PDF or DOCX resume document.");
         }
 
         // File size validation (max 10MB)
         if (file.getSize() > 10 * 1024 * 1024) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File size exceeds the limit of 10MB.");
+            double sizeMb = (double) file.getSize() / (1024 * 1024);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("File size (%.2f MB) exceeds the maximum allowed limit of 10MB. Please select a smaller file.", sizeMb));
         }
 
+        String fileName = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase() : "";
         String contentType = file.getContentType();
-        if (contentType == null || (!contentType.equals("application/pdf") && 
-            !contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") &&
-            !contentType.equals("application/msword"))) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unsupported file type. Please upload a PDF or DOCX file.");
+        boolean validExt = fileName.endsWith(".pdf") || fileName.endsWith(".docx") || fileName.endsWith(".doc");
+        boolean validMime = contentType != null && (contentType.equals("application/pdf") ||
+            contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") ||
+            contentType.equals("application/msword"));
+
+        if (!validExt && !validMime) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Unsupported file format. Please upload a PDF (.pdf) or Word document (.docx / .doc).");
         }
 
         try {
@@ -336,6 +341,9 @@ public class ResumeController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Missing jobDescription parameter.\"}");
         }
         String jdText = requestBody.get("jobDescription").asText();
+        if (jdText == null || jdText.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Job description text cannot be empty. Please provide a valid job description.\"}");
+        }
         UploadedResume resume = optionalResume.get();
         try {
             String rawText = getOrExtractRawText(resume);
@@ -375,6 +383,10 @@ public class ResumeController {
         }
         Long id1 = requestBody.get("id1").asLong();
         Long id2 = requestBody.get("id2").asLong();
+
+        if (id1.equals(id2)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"Please select two different resume versions to compare.\"}");
+        }
 
         Optional<UploadedResume> opt1 = uploadedResumeRepository.findById(id1);
         Optional<UploadedResume> opt2 = uploadedResumeRepository.findById(id2);

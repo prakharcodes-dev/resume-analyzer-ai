@@ -9,8 +9,10 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 ## 🌟 Key Features
 
 ### 📄 1. Document Parsing & Text Extraction (Offline)
-- Supports **PDF** (`.pdf`) and **Word** (`.docx`) document uploads up to 10MB.
+- Supports **PDF** (`.pdf`) and **Word** (`.docx` / `.doc`) document uploads up to 10MB.
 - Uses **Apache PDFBox** and **Apache POI** for complete local, privacy-focused text parsing.
+- Enhanced upload validation with explicit error messaging for 0-byte empty files, files exceeding 10MB (displaying exact size in MB), and invalid extension/MIME formats.
+- Instant **"Analysis Completed" Summary Card** rendered directly on the Dashboard showing ATS score badge, rating status, top extracted skills tags, identified role, and 1-click action buttons.
 - Extracts candidate name, email, phone number, LinkedIn, GitHub, and portfolio URLs.
 - Parses education history, work experience, technical skills, and key projects automatically.
 
@@ -23,7 +25,7 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 - **Resume Strengths**: Evaluates word count suitability, skill density, complete contact headers, web presence, quantifiable metrics, and readability scanning.
 - **Weaknesses**: Identifies word count anomalies, passive voice usage, weak verb phrasing (e.g. "responsible for"), missing summaries, and multi-column layout pipe clutter.
 - **Missing Sections**: Audits standard resume headers (Summary, Work Experience, Skills, Education, Projects, Certifications, Achievements).
-- **ATS Readiness**: Displays ATS Score, compatibility rating (`EXCELLENT`, `GOOD`, `NEEDS_IMPROVEMENT`, `POOR`), and structural readiness breakdown.
+- **ATS Readiness & Dynamic Feedback**: Computes ATS Score (0-100), compatibility rating (`EXCELLENT`, `GOOD`, `NEEDS_IMPROVEMENT`, `POOR`), structural readiness breakdown, and dynamic rating-tailored feedback messages.
 - **Resume Rating**: Calculates overall resume score out of 100 with letter grades (`A+ / Exceptional`, `A / Outstanding`, `B+ / Strong`, `B / Good`, `C / Fair`).
 - **Improvement Suggestions**: Actionable recommendations categorized by section.
 
@@ -42,9 +44,11 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 - **View History**: Click "View Report" on any historical resume to launch the 8-tab Report Drawer Modal.
 - **Delete Resume**: Single-click deletion that removes the database entry and deletes the local file from disk.
 - **Download Reports**: Download Strength, Grammar, ATS, or AI reports directly in JSON/TXT format.
+- **Empty & Corrupted File Protection**: Built-in 0-byte file detection and unextractable document handling with descriptive failure status reporting.
 
 ### 🎯 6. Job Description Matching & ATS Checker
 - Paste or upload Job Description (`.txt`) files to compute **Resume Match Percentage**.
+- Input validation prevents matching blank or whitespace-only job description text.
 - Breakdown metrics: Skill Match %, Experience Match %, Education Match %, and Overall Compatibility.
 - Identifies missing required skills and industry keywords.
 - Evaluates ATS formatting, structure, and keyword density.
@@ -55,6 +59,7 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 
 ### ⚖️ 8. Resume Version Comparison (Feature 13)
 - Compare two resume versions side-by-side (Resume Version 1 vs Resume Version 2).
+- Validates selection to ensure two distinct resume versions are chosen.
 - Generates:
   - **ATS Score Delta**: Score improvement from Version 1 to Version 2 (`+15%`).
   - **Added Skills**: Technical skills added in the newer version.
@@ -63,7 +68,8 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
   - **Improvement Rate**: Overall optimization score growth percentage.
 
 ### ✉️ 9. AI Cover Letter Generator (Feature 14)
-- Craft tailored, high-converting professional cover letters aligned with your selected source resume, target company name, job role, and target job description.
+- Craft tailored, high-converting professional cover letters aligned with your selected source resume version, target company name, job role, and target job description.
+- Validates target company and job role fields prior to request submission.
 - Instant 1-click **Copy to Clipboard** and **Download Cover Letter** functionality.
 
 ### 🎨 10. Resume Templates & Visual Builder (Feature 17)
@@ -98,7 +104,7 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 - **Categorized Sidebar Menu**: Grouped into `MAIN PLATFORM`, `AI CAREER TOOLS`, `AUDIT & ANALYZERS`, and `ENTERPRISE` (`PRO`).
 - **3-Step Onboarding Guide**: Easy-to-understand visual walkthrough on opening dashboard.
 - **1-Click Quick Action Shortcuts**: Instant shortcut cards to Upload Resume, AI Cover Letter, Resume Templates, and Recruiter Dashboard.
-- **Theme Contrast & Polish**: Dark/light mode theme toggle, card elevation, hover transitions, and responsive layout.
+- **Theme Contrast & Polish**: Dark/light mode theme toggle, card elevation, hover transitions, refined UI labels, and responsive layout.
 
 ---
 
@@ -180,4 +186,4 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 - **Current Status**: **Fully Featured & Production Ready**
 - **Live Deployment**: [https://resume-analyzer-ai-bvpv.onrender.com](https://resume-analyzer-ai-bvpv.onrender.com)
 - **Offline Engine**: 100% functional without external API key dependencies.
-- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, **Resume Comparison**, **AI Cover Letter Generator**, **5 Resume Templates**, **LinkedIn Profile Analyzer**, **GitHub Profile Analyzer**, **Recruiter Dashboard (Bulk Upload & Screening)**, and **Redesigned Modern UI/UX**.
+- **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, **Resume Comparison**, **AI Cover Letter Generator**, **5 Resume Templates**, **LinkedIn Profile Analyzer**, **GitHub Profile Analyzer**, **Recruiter Dashboard (Bulk Upload & Screening)**, **Instant Analysis Completed Summary Card**, **Enhanced Upload Validation & Error Messages**, **Dynamic ATS Feedback**, and **Polished Responsive UI/UX**.

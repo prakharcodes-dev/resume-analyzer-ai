@@ -100,11 +100,26 @@ public class ResumeAnalysisService {
         rootNode.put("sectionCompletenessScore", completenessScore);
         rootNode.put("readabilityScore", readabilityScore);
         rootNode.put("compatibility", compatibility);
+        rootNode.put("atsSummaryMessage", buildAtsSummary(compatibility, atsScore));
 
         try {
             return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(rootNode);
         } catch (Exception e) {
             return "{}";
+        }
+    }
+
+    private String buildAtsSummary(String compatibility, int atsScore) {
+        switch (compatibility) {
+            case "EXCELLENT":
+                return "Your resume achieves an EXCELLENT ATS compatibility score (" + atsScore + "%). Section headers, clean layout formatting, and technical keywords are highly optimized for automated applicant tracking systems.";
+            case "GOOD":
+                return "Your resume has GOOD ATS compatibility (" + atsScore + "%). Standard parsers can extract your information cleanly, though integrating more targeted technical keywords and quantitative metrics can boost your rank.";
+            case "NEEDS_IMPROVEMENT":
+                return "ATS Readiness NEEDS IMPROVEMENT (" + atsScore + "%). Automated scanners may struggle with missing section headers, low keyword density, or dense text formatting. Consider adding explicit Skills and Experience sections.";
+            case "POOR":
+            default:
+                return "ATS Readiness is POOR (" + atsScore + "%). Automated ATS parsers may fail or miss key applicant data. Ensure standard section headings (Summary, Experience, Education, Skills), single-column formatting, and relevant technical keywords are included.";
         }
     }
 
@@ -869,7 +884,7 @@ public class ResumeAnalysisService {
         ObjectNode atsNode = objectMapper.createObjectNode();
         atsNode.put("score", atsScore);
         atsNode.put("rating", atsRating);
-        atsNode.put("summary", "ATS Readiness is " + atsRating + " (" + atsScore + "%). Parsers will evaluate structure, keywords, and completeness cleanly.");
+        atsNode.put("summary", buildAtsSummary(atsRating, atsScore));
 
         // --- RESUME RATING ---
         int overallScore = (int) Math.round((atsScore * 0.40) + (readability * 0.30) + (Math.min(strengths.size() * 15, 100) * 0.30));

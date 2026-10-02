@@ -3220,6 +3220,150 @@ body.dark-mode .shortcut-icon.icon-indigo { background: rgba(79, 70, 229, 0.25);
     color: var(--primary);
 }
 
+/* ----------------------------------------------------
+   ANALYSIS SUMMARY CARD & UI POLISH STYLES
+---------------------------------------------------- */
+.analysis-summary-card {
+    border-left: 5px solid var(--primary);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(79, 70, 229, 0.04) 100%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.summary-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.summary-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-main);
+}
+
+.summary-card-body {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0.5rem 0 1rem 0;
+}
+
+.summary-score-box {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: var(--bg-dark, #f9fafb);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.score-circle-large {
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: #fff;
+    font-size: 1.55rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.score-meta h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-main);
+}
+
+.score-meta p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0.15rem 0 0.4rem 0;
+}
+
+.summary-details {
+    flex: 1;
+    min-width: 260px;
+}
+
+.skills-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.skill-tag-sm {
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary);
+    padding: 0.28rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.skill-tag-sm.tag-more {
+    background: var(--bg-dark, #f3f4f6);
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+}
+
+.role-badge {
+    display: inline-block;
+    background: #e0f2fe;
+    color: var(--secondary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #bae6fd;
+}
+
+.summary-card-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+}
+
+/* Button Active & Disabled States Polish */
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn:disabled, .btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Dark mode overrides for summary card */
+body.dark-mode .analysis-summary-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(79, 70, 229, 0.1) 100%);
+}
+
+body.dark-mode .summary-score-box {
+    background: var(--bg-darker);
+}
+
+body.dark-mode .role-badge {
+    background: rgba(2, 132, 199, 0.2);
+    color: #38bdf8;
+    border-color: rgba(2, 132, 199, 0.3);
+}
+
+
 
 
 
