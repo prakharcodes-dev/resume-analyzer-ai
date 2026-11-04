@@ -72,7 +72,11 @@ body {
     flex-direction: column;
     padding: 2rem 1.25rem;
     position: fixed;
+    inset: 0 auto 0 0;
     height: 100vh;
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     z-index: 100;
 }
 
@@ -427,10 +431,11 @@ body {
     background-color: #ffffff;
     border: 1px solid var(--border-color);
     border-radius: 12px;
-    padding: 1.8rem;
+    padding: 1.5rem 1.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1.5rem;
     margin-bottom: 1.8rem;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -451,6 +456,19 @@ body {
     font-size: 0.9rem;
     max-width: 580px;
     line-height: 1.45;
+}
+
+.welcome-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    margin-top: 1rem;
+}
+
+.welcome-actions > span {
+    color: var(--text-muted);
+    font-size: 0.8rem;
 }
 
 .welcome-stats .stat-circle {
@@ -483,6 +501,32 @@ body {
     grid-template-columns: repeat(3, 1fr);
     gap: 1.25rem;
     margin-bottom: 1.8rem;
+}
+
+.dashboard-stats .stat-card {
+    padding: 0.9rem 1rem;
+}
+
+.dashboard-quick-actions {
+    padding: 1.15rem 1.25rem 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--bg-card);
+}
+
+.dashboard-section-heading {
+    margin-bottom: 0.9rem;
+}
+
+.dashboard-section-heading h3 {
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+.dashboard-section-heading p {
+    margin-top: 0.15rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
 }
 
 .stat-card {
@@ -1249,6 +1293,8 @@ body {
     padding: 1rem 1.8rem;
     border-top: 1px solid var(--border-color);
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
     justify-content: flex-end;
     background: var(--bg-card-hover);
 }
@@ -1921,6 +1967,12 @@ body.dark-mode .version-badge {
 }
 
 .report-download-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.report-share-group {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
@@ -3052,9 +3104,14 @@ body.dark-mode .rc-compare-card {
     letter-spacing: 0.5px;
     padding: 0.25rem 0.75rem;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.18);
-    color: #e0e7ff;
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary);
     backdrop-filter: blur(4px);
+}
+
+body.dark-mode .welcome-tag {
+    background: rgba(99, 102, 241, 0.2);
+    color: #c7d2fe;
 }
 
 .quick-start-guide {
@@ -3127,8 +3184,8 @@ body.dark-mode .step-card {
 
 .shortcuts-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.85rem;
 }
 
 @media (max-width: 1100px) {
@@ -3138,6 +3195,28 @@ body.dark-mode .step-card {
 }
 
 @media (max-width: 576px) {
+    .welcome-banner {
+        align-items: flex-start;
+        padding: 1.15rem;
+    }
+    .welcome-text h2 {
+        font-size: 1.25rem;
+    }
+    .welcome-stats .stat-circle {
+        width: 64px;
+        height: 64px;
+        flex: 0 0 64px;
+    }
+    .welcome-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+    .dashboard-quick-actions {
+        padding: 1rem;
+    }
     .shortcuts-grid {
         grid-template-columns: 1fr;
     }

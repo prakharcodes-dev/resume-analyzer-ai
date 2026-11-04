@@ -11,7 +11,7 @@
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom Style -->
-    <link rel="stylesheet" href="css/styles.css?v=20260818_v6">
+    <link rel="stylesheet" href="css/styles.css?v=20261104_reports_v2">
 </head>
 <body>
     <div class="app-container">
@@ -103,85 +103,25 @@
             <section id="view-dashboard" class="content-view active">
                 <div class="welcome-banner mb-4">
                     <div class="welcome-text">
-                        <div class="welcome-tag mb-2"><i class="fa-solid fa-wand-magic-sparkles"></i> All-in-One Career Platform</div>
-                        <h2>Welcome to RESUME<span>AI</span>, <span id="welcome-name">Guest User</span>!</h2>
-                        <p>Analyze your resume, extract key details, calculate ATS score, generate cover letters, and build your career profile 100% offline.</p>
+                        <div class="welcome-tag mb-2"><i class="fa-solid fa-wand-magic-sparkles"></i> YOUR RESUME WORKSPACE</div>
+                        <h2>Welcome back, <span id="welcome-name">Guest User</span></h2>
+                        <p>Upload a resume to review extracted details, ATS feedback, and job-match results.</p>
+                        <div class="welcome-actions">
+                            <button class="btn btn-primary" type="button" onclick="document.getElementById('drop-zone').scrollIntoView({behavior: 'smooth'});">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Upload a Resume
+                            </button>
+                            <span>PDF or DOCX · Up to 10 MB</span>
+                        </div>
                     </div>
                     <div class="welcome-stats">
                         <div class="stat-circle">
                             <span id="stat-ats-score">--</span>
-                            <p>ATS Rating</p>
+                            <p>Latest ATS</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- How It Works Quick 3-Step Guide -->
-                <div class="quick-start-guide mb-4">
-                    <div class="guide-header mb-3">
-                        <h4><i class="fa-solid fa-compass text-primary"></i> How to Use This Platform (Quick 3-Step Guide)</h4>
-                    </div>
-                    <div class="guide-steps-grid">
-                        <div class="step-card">
-                            <div class="step-num">1</div>
-                            <div class="step-content">
-                                <h5>Upload Your Resume</h5>
-                                <p>Upload your PDF or DOCX resume below to parse skills, experience, and calculate your instant ATS score.</p>
-                            </div>
-                        </div>
-                        <div class="step-card">
-                            <div class="step-num">2</div>
-                            <div class="step-content">
-                                <h5>Use AI Career Tools</h5>
-                                <p>Generate tailored cover letters, preview 5 resume template layouts, and audit your LinkedIn & GitHub profiles.</p>
-                            </div>
-                        </div>
-                        <div class="step-card">
-                            <div class="step-num">3</div>
-                            <div class="step-content">
-                                <h5>Compare & Benchmark</h5>
-                                <p>Track resume versions side-by-side or switch to Recruiter Mode for bulk candidate screening.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick Action Shortcuts -->
-                <div class="shortcuts-grid mb-4">
-                    <div class="shortcut-card" onclick="document.getElementById('drop-zone').scrollIntoView({behavior: 'smooth'});">
-                        <div class="shortcut-icon icon-purple"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                        <div class="shortcut-text">
-                            <h4>Upload Resume</h4>
-                            <p>Parse ATS score & skills</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
-                    </div>
-                    <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'cover-letter\']').click();">
-                        <div class="shortcut-icon icon-cyan"><i class="fa-solid fa-envelope-open-text"></i></div>
-                        <div class="shortcut-text">
-                            <h4>AI Cover Letter</h4>
-                            <p>Create tailored application</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
-                    </div>
-                    <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'templates\']').click();">
-                        <div class="shortcut-icon icon-green"><i class="fa-solid fa-file-invoice"></i></div>
-                        <div class="shortcut-text">
-                            <h4>Resume Templates</h4>
-                            <p>5 Professional layouts</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
-                    </div>
-                    <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'recruiter\']').click();">
-                        <div class="shortcut-icon icon-indigo"><i class="fa-solid fa-users-gear"></i></div>
-                        <div class="shortcut-text">
-                            <h4>Recruiter Dashboard</h4>
-                            <p>Bulk screening & ranking</p>
-                        </div>
-                        <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
-                    </div>
-                </div>
-
-                <div class="stats-grid mb-4">
+                <div class="stats-grid dashboard-stats mb-4">
                     <div class="stat-card">
                         <div class="stat-icon purple"><i class="fa-solid fa-file-pdf"></i></div>
                         <div class="stat-data">
@@ -201,6 +141,41 @@
                         <div class="stat-data">
                             <h3 id="stat-profile-comp">0%</h3>
                             <p>Profile Completeness</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-quick-actions mb-4">
+                    <div class="dashboard-section-heading">
+                        <div>
+                            <h3>Quick actions</h3>
+                            <p>Choose a tool to continue.</p>
+                        </div>
+                    </div>
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'cover-letter\']').click();">
+                            <div class="shortcut-icon icon-cyan"><i class="fa-solid fa-envelope-open-text"></i></div>
+                            <div class="shortcut-text">
+                                <h4>AI Cover Letter</h4>
+                                <p>Create tailored application</p>
+                            </div>
+                            <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
+                        </div>
+                        <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'templates\']').click();">
+                            <div class="shortcut-icon icon-green"><i class="fa-solid fa-file-invoice"></i></div>
+                            <div class="shortcut-text">
+                                <h4>Resume Templates</h4>
+                                <p>5 Professional layouts</p>
+                            </div>
+                            <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
+                        </div>
+                        <div class="shortcut-card" onclick="document.querySelector('.nav-item[data-view=\'recruiter\']').click();">
+                            <div class="shortcut-icon icon-indigo"><i class="fa-solid fa-users-gear"></i></div>
+                            <div class="shortcut-text">
+                                <h4>Recruiter Dashboard</h4>
+                                <p>Bulk screening & ranking</p>
+                            </div>
+                            <i class="fa-solid fa-arrow-right shortcut-arrow"></i>
                         </div>
                     </div>
                 </div>
@@ -1530,10 +1505,13 @@
             </div>
             <div class="modal-footer flex-header">
                 <div class="report-download-group">
-                    <button class="btn btn-sm btn-outline" id="btn-download-strength" title="Download Resume Strength Report"><i class="fa-solid fa-shield-halved"></i> Download Strength Report</button>
-                    <button class="btn btn-sm btn-outline" id="btn-download-grammar" title="Download Grammar Report"><i class="fa-solid fa-pen-nib"></i> Download Grammar Report</button>
-                    <button class="btn btn-sm btn-outline" id="btn-download-ats" title="Download ATS Report"><i class="fa-solid fa-gauge"></i> Download ATS Report</button>
-                    <button class="btn btn-sm btn-outline" id="btn-download-ai" title="Download AI Report"><i class="fa-solid fa-robot"></i> Download AI Report</button>
+                    <button class="btn btn-sm btn-outline" id="btn-download-strength" title="Download Resume Strength Report as PDF"><i class="fa-solid fa-file-pdf"></i> Strength PDF</button>
+                    <button class="btn btn-sm btn-outline" id="btn-download-grammar" title="Download Grammar Report as PDF"><i class="fa-solid fa-file-pdf"></i> Grammar PDF</button>
+                    <button class="btn btn-sm btn-outline" id="btn-download-ats" title="Download ATS Report as PDF"><i class="fa-solid fa-file-pdf"></i> ATS PDF</button>
+                    <button class="btn btn-sm btn-outline" id="btn-download-ai" title="Download AI Report as PDF"><i class="fa-solid fa-file-pdf"></i> AI Analysis PDF</button>
+                </div>
+                <div class="report-share-group">
+                    <button class="btn btn-sm btn-secondary" id="btn-copy-share-report" title="Copy the active analysis report with its disclaimer"><i class="fa-solid fa-copy"></i> Copy Shareable Report</button>
                 </div>
                 <button class="btn btn-secondary" id="btn-close-modal-footer">Close Report</button>
             </div>
@@ -1562,6 +1540,6 @@
     </div>
 
     <!-- Application Script -->
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=20261104_reports_v2"></script>
 </body>
 </html>

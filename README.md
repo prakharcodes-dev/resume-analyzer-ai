@@ -2,7 +2,7 @@
 
 🌐 **Live Application**: [https://resume-analyzer-ai-bvpv.onrender.com](https://resume-analyzer-ai-bvpv.onrender.com)
 
-An AI-powered, 100% offline-first resume analysis and career platform built with **Spring Boot 3.3.1 (Java 21)** and modern **Vanilla JavaScript**. Parse PDF and DOCX resumes, extract candidate profiles, audit ATS readiness, run job description matching, check writing grammar, track resume version history, generate tailored cover letters, render 5 professional resume templates, audit LinkedIn/GitHub profiles, screen candidates in bulk with the Recruiter Dashboard, and download comprehensive career reports without requiring external API keys.
+An AI-powered, offline-first resume analysis and career platform built with **Spring Boot 3.3.1 (Java 21)** and **Vanilla JavaScript**. Parse PDF and DOCX resumes, extract candidate profiles, audit ATS readiness, run job description matching, check writing grammar, track resume history, generate cover letters, render resume templates, analyze LinkedIn/GitHub profiles, and screen candidates with the Recruiter Dashboard. The application is under development; automated analysis may contain errors and should be independently verified.
 
 ---
 
@@ -43,7 +43,8 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 - **Upload Dates**: Displays precise upload timestamps.
 - **View History**: Click "View Report" on any historical resume to launch the 8-tab Report Drawer Modal.
 - **Delete Resume**: Single-click deletion that removes the database entry and deletes the local file from disk.
-- **Download Reports**: Download Strength, Grammar, ATS, or AI reports directly in JSON/TXT format.
+- **PDF Reports**: Download the selected Strength, Grammar, ATS, or AI Analysis report as a PDF. Reports include an application-under-development and verification disclaimer.
+- **Copy Shareable Report**: Copy the currently selected report and its disclaimer to the clipboard.
 - **Empty & Corrupted File Protection**: Built-in 0-byte file detection and unextractable document handling with descriptive failure status reporting.
 
 ### 🎯 6. Job Description Matching & ATS Checker
@@ -135,6 +136,7 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 | `GET` | `/api/resumes/{id}/suggestions` | Get section-by-section AI improvement suggestions |
 | `GET` | `/api/resumes/{id}/skills-analysis` | Get skills categorizations, distribution & strength graphs |
 | `GET` | `/api/resumes/{id}/download-report/{type}` | Download report file (`strength`, `grammar`, `ats`, `ai`) |
+| `GET` | `/api/resumes/{id}/share-report/{type}` | Download a shareable PDF report with a verification disclaimer (`strength`, `grammar`, `ats`, `ai`) |
 | `POST` | `/api/resumes/{id}/match` | Compare resume against a target Job Description |
 | `POST` | `/api/resumes/compare` | Compare two resume versions side-by-side |
 | `POST` | `/api/resumes/cover-letter` | Generate AI Cover Letter tailored to company & role |
@@ -183,7 +185,7 @@ An AI-powered, 100% offline-first resume analysis and career platform built with
 
 ## 📊 Project Status
 
-- **Current Status**: **Fully Featured & Production Ready**
+- **Current Status**: **Under development**. Analysis output can be inaccurate; verify important results independently.
 - **Live Deployment**: [https://resume-analyzer-ai-bvpv.onrender.com](https://resume-analyzer-ai-bvpv.onrender.com)
 - **Offline Engine**: 100% functional without external API key dependencies.
 - **Features Included**: Document Parsing, Career Profile, ATS Checker, Job Matcher, AI Suggestions, Skills Analysis, Resume Strength Report, Grammar & Writing Checker, Theme Toggle, Real-Time Search, Resume History & Report Downloads, Full-Screen Modal Drawer, **Resume Comparison**, **AI Cover Letter Generator**, **5 Resume Templates**, **LinkedIn Profile Analyzer**, **GitHub Profile Analyzer**, **Recruiter Dashboard (Bulk Upload & Screening)**, **Instant Analysis Completed Summary Card**, **Enhanced Upload Validation & Error Messages**, **Dynamic ATS Feedback**, and **Polished Responsive UI/UX**.
