@@ -9,7 +9,7 @@ An AI-powered, offline-first resume analysis and career platform built with **Sp
 ## 🌟 Key Features
 
 ### 📄 1. Document Parsing & Text Extraction (Offline)
-- Supports **PDF** (`.pdf`) and **Word** (`.docx` / `.doc`) document uploads up to 10MB.
+- Supports **PDF** (`.pdf`) and **Word** (`.docx`) document uploads up to 10MB per file.
 - Uses **Apache PDFBox** and **Apache POI** for complete local, privacy-focused text parsing.
 - Enhanced upload validation with explicit error messaging for 0-byte empty files, files exceeding 10MB (displaying exact size in MB), and invalid extension/MIME formats.
 - Instant **"Analysis Completed" Summary Card** rendered directly on the Dashboard showing ATS score badge, rating status, top extracted skills tags, identified role, and 1-click action buttons.
@@ -46,6 +46,14 @@ An AI-powered, offline-first resume analysis and career platform built with **Sp
 - **PDF Reports**: Download the selected Strength, Grammar, ATS, or AI Analysis report as a PDF. Reports include an application-under-development and verification disclaimer.
 - **Copy Shareable Report**: Copy the currently selected report and its disclaimer to the clipboard.
 - **Empty & Corrupted File Protection**: Built-in 0-byte file detection and unextractable document handling with descriptive failure status reporting.
+
+### 🔐 Accounts and Access
+- Create an account and sign in from the application. Passwords are stored using BCrypt and sessions use HTTP-only cookies with CSRF protection.
+- Each account sees only its own profile and resumes. Recruiter endpoints require the `ROLE_RECRUITER` role.
+- Set a strong `RECRUITER_REGISTRATION_KEY` server-side to enable recruiter signup. The key is never embedded in the application. Existing accounts are never promoted from request data.
+- Set `COOKIE_SECURE=true` when serving the application over HTTPS.
+- New account registrations cannot claim existing guest records. Review and migrate any legacy `guest@career.com` profiles and resumes to the intended owner before removing legacy data.
+- Local schema changes use Hibernate `update` to preserve existing data. For production, use a managed database migration process and set `DDL_AUTO=validate` after the schema has been migrated.
 
 ### 🎯 6. Job Description Matching & ATS Checker
 - Paste or upload Job Description (`.txt`) files to compute **Resume Match Percentage**.
@@ -94,7 +102,7 @@ An AI-powered, offline-first resume analysis and career platform built with **Sp
 - Calculates **GitHub Score out of 100** with category breakdown and offline fallback handling.
 
 ### 👥 13. Recruiter Candidate Screening Dashboard (Enterprise Upgrade)
-- **Bulk Resume Upload**: Upload multiple candidate PDF/DOC/DOCX resumes simultaneously with fault-tolerant processing and live batch progress.
+- **Bulk Resume Upload**: Upload multiple candidate PDF/DOCX resumes simultaneously with fault-tolerant processing and live batch progress.
 - **Candidate Ranking**: Automatic candidate ranking by ATS score descending (#1, #2, #3...).
 - **Multi-Criteria Filtering**: Filter candidates dynamically by Skill substring, Min/Max Experience years, Education Degree level, ATS Score range, and Shortlist status.
 - **Shortlist Persistence**: Shortlist candidates with H2 database column persistence.
@@ -113,7 +121,7 @@ An AI-powered, offline-first resume analysis and career platform built with **Sp
 
 | Layer | Technology |
 |---|---|
-| **Backend Framework** | Java 21, Spring Boot 3.3.1 (Spring Web, Spring Data JPA, Validation) |
+| **Backend Framework** | Java 21, Spring Boot 4.1.2 (Spring MVC, Spring Data JPA, Spring Security) |
 | **Document Parsers** | Apache PDFBox 3.0.2, Apache POI 5.2.5 (poi-ooxml) |
 | **Database** | H2 Database (File-persisted `resume_analyzer.mv.db`, MySQL mode) |
 | **Frontend** | HTML5, Vanilla JavaScript (ES6+), Vanilla CSS3 (CSS Variables, Flexbox/Grid) |

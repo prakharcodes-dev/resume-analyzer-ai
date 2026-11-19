@@ -18,6 +18,7 @@ resume_analyzer.trace.db
 # Local User Uploads (Keep folder via .gitkeep)
 uploads/*
 !uploads/.gitkeep
+data/uploads/
 
 # Logs
 *.log

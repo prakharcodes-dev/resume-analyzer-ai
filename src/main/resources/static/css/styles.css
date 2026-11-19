@@ -3447,3 +3447,31 @@ body.dark-mode .role-badge {
 
 
 
+.auth-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: var(--bg-dark);
+}
+
+.auth-screen[hidden] { display: none; }
+
+.auth-card {
+    width: min(100%, 420px);
+    padding: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: var(--bg-card);
+    box-shadow: 0 20px 60px rgba(15, 23, 42, .12);
+}
+
+.auth-brand { margin-bottom: 28px; }
+.auth-card h2 { margin-bottom: 6px; }
+.auth-card form { display: grid; gap: 10px; margin-top: 24px; }
+.auth-card input { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 9px; font: inherit; }
+.auth-card form .btn { margin-top: 12px; }
+.auth-switch { margin-top: 18px; padding: 0; border: 0; background: transparent; color: var(--primary); font: inherit; cursor: pointer; }
+.auth-error { color: var(--danger); font-size: .92rem; }

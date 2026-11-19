@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface UploadedResumeRepository extends JpaRepository<UploadedResume, Long> {
     List<UploadedResume> findByUserIdOrderByUploadDateDesc(Long userId);
+    List<UploadedResume> findByUserId(Long userId);
+    java.util.Optional<UploadedResume> findByIdAndUserId(Long id, Long userId);
 }

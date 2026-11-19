@@ -10,12 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/profile")
 public class ProfileController {
-
-    private static final Long DEFAULT_USER_ID = 1L;
 
     @Autowired
     private UserRepository userRepository;
@@ -25,14 +24,12 @@ public class ProfileController {
 
     @GetMapping
     public ResponseEntity<?> getProfile() {
-        Optional<UserProfile> profile = userProfileRepository.findByUserId(DEFAULT_USER_ID);
+        User user = currentUser();
+        Optional<UserProfile> profile = userProfileRepository.findByUserId(user.getId());
         if (profile.isEmpty()) {
-            // Lazy create profile if not exists
-            User user = userRepository.findById(DEFAULT_USER_ID)
-                    .orElseGet(() -> userRepository.save(new User("guest@career.com", "ROLE_USER")));
             UserProfile newProfile = new UserProfile(user);
-            newProfile.setFullName("Guest User");
-            newProfile.setEmail("guest@career.com");
+            newProfile.setFullName(user.getEmail().substring(0, user.getEmail().indexOf('@')));
+            newProfile.setEmail(user.getEmail());
             return ResponseEntity.ok(userProfileRepository.save(newProfile));
         }
         return ResponseEntity.ok(profile.get());
@@ -40,7 +37,7 @@ public class ProfileController {
 
     @PutMapping
     public ResponseEntity<?> updateProfile(@RequestBody UserProfile updatedProfile) {
-        Optional<UserProfile> optionalProfile = userProfileRepository.findByUserId(DEFAULT_USER_ID);
+        Optional<UserProfile> optionalProfile = userProfileRepository.findByUserId(currentUser().getId());
         if (optionalProfile.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Profile not found.");
         }
@@ -59,5 +56,11 @@ public class ProfileController {
 
         UserProfile saved = userProfileRepository.save(existingProfile);
         return ResponseEntity.ok(saved);
+    }
+
+    private User currentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user no longer exists."));
     }
 }

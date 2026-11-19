@@ -71,9 +71,9 @@
                 </a>
             </nav>
             <div class="user-status-card">
-                <div class="status-avatar">G</div>
+                <div class="status-avatar" id="status-avatar">U</div>
                 <div class="status-info">
-                    <h4>Guest User</h4>
+                    <h4 id="status-user-email">Account</h4>
                     <p><i class="fa-solid fa-circle status-dot"></i> Active Session</p>
                 </div>
             </div>
@@ -93,9 +93,10 @@
                     </button>
                     <div class="mode-badge"><i class="fa-solid fa-bolt"></i> Offline Mode</div>
                     <div class="profile-preview">
-                        <span id="user-display-name">Guest User</span>
-                        <div class="avatar">G</div>
+                        <span id="user-display-name">Account</span>
+                        <div class="avatar" id="header-avatar">U</div>
                     </div>
+                    <button class="btn btn-secondary" id="btn-logout" type="button">Sign out</button>
                 </div>
             </header>
 
@@ -869,7 +870,7 @@
                         <i class="fa-solid fa-cloud-arrow-up fa-3x text-primary mb-3"></i>
                         <h5>Drag & Drop Multiple Candidate Resumes Here</h5>
                         <p class="text-muted">Supports PDF, DOC, and DOCX formats (Max 10MB per file). Each file is processed independently.</p>
-                        <input type="file" id="rc-file-input" multiple accept=".pdf,.doc,.docx" style="display: none;">
+                        <input type="file" id="rc-file-input" multiple accept=".pdf,.docx" style="display: none;">
                         <button class="btn btn-outline mt-2" onclick="document.getElementById('rc-file-input').click();">
                             <i class="fa-solid fa-file-circle-plus"></i> Select Candidate Files
                         </button>
@@ -1536,6 +1537,35 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" id="btn-close-rc-compare-footer">Close Comparison</button>
             </div>
+        </div>
+    </div>
+
+    <div class="auth-screen" id="auth-screen" hidden>
+        <div class="auth-card">
+            <div class="brand auth-brand">
+                <i class="fa-solid fa-wand-magic-sparkles logo-icon"></i>
+                <div class="brand-text"><h1>RESUME<span>AI</span></h1><p>Career Assistant</p></div>
+            </div>
+            <h2 id="auth-title">Sign in</h2>
+            <p class="text-muted" id="auth-description">Sign in to your private resume workspace.</p>
+            <form id="auth-form">
+                <label for="auth-email">Email</label>
+                <input id="auth-email" name="email" type="email" autocomplete="username" required maxlength="255">
+                <label for="auth-password">Password</label>
+                <input id="auth-password" name="password" type="password" autocomplete="current-password" required minlength="12" maxlength="72">
+                <div id="auth-confirm-wrap" hidden>
+                    <label for="auth-confirm-password">Confirm password</label>
+                    <input id="auth-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="72">
+                </div>
+                <div id="auth-recruiter-wrap" hidden>
+                    <label for="auth-recruiter-key">Recruiter access key</label>
+                    <input id="auth-recruiter-key" name="recruiterKey" type="password" autocomplete="off" maxlength="256">
+                </div>
+                <p class="auth-error" id="auth-error" role="alert" hidden></p>
+                <button class="btn btn-primary" id="auth-submit" type="submit">Sign in</button>
+            </form>
+            <button class="auth-switch" id="auth-switch" type="button">Create an account</button>
+            <button class="auth-switch" id="recruiter-switch" type="button" hidden>Have a recruiter access key?</button>
         </div>
     </div>
 

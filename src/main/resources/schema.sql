@@ -2,7 +2,8 @@
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    role VARCHAR(50) NOT NULL
+    role VARCHAR(50) NOT NULL,
+    password_hash VARCHAR(255)
 );
 
 -- User Profiles Table
@@ -35,8 +36,3 @@ CREATE TABLE IF NOT EXISTS uploaded_resumes (
     parsed_content LONGTEXT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
--- Insert Default Guest User and Profile if not exists
--- Use INSERT IGNORE since we have UNIQUE constraints
-INSERT IGNORE INTO users (id, email, role) VALUES (1, 'guest@career.com', 'ROLE_USER');
-INSERT IGNORE INTO user_profiles (id, user_id, full_name, email) VALUES (1, 1, 'Guest User', 'guest@career.com');

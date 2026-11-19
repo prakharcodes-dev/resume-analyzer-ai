@@ -28,7 +28,11 @@ public class ResumeParserService {
      */
     public String parseResume(MultipartFile file) throws IOException {
         String rawText = extractRawText(file);
-        return structureRawText(rawText, file.getOriginalFilename());
+        return parseResume(rawText, file.getOriginalFilename());
+    }
+
+    public String parseResume(String rawText, String originalFilename) {
+        return structureRawText(rawText, originalFilename);
     }
 
     /**
@@ -36,11 +40,11 @@ public class ResumeParserService {
      */
     public String extractRawText(MultipartFile file) throws IOException {
         String text = "";
+        String fileName = file.getOriginalFilename() == null ? "" : file.getOriginalFilename().toLowerCase(Locale.ROOT);
         String contentType = file.getContentType();
-        if (contentType != null && contentType.equals("application/pdf")) {
+        if (fileName.endsWith(".pdf") || "application/pdf".equals(contentType)) {
             text = extractTextFromPdf(file.getBytes());
-        } else if (contentType != null && (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
-                || contentType.equals("application/msword"))) {
+        } else if (fileName.endsWith(".docx") || "application/vnd.openxmlformats-officedocument.wordprocessingml.document".equals(contentType)) {
             text = extractTextFromDocx(file.getInputStream());
         } else {
             throw new IllegalArgumentException("Unsupported file type. Please upload a PDF or DOCX file.");
@@ -57,21 +61,23 @@ public class ResumeParserService {
     public String extractRawText(String filePath, String contentType) throws IOException {
         java.io.File file = new java.io.File(filePath);
         if (!file.exists()) {
-            throw new java.io.FileNotFoundException("File not found at: " + filePath);
+            throw new java.io.FileNotFoundException("Uploaded document is unavailable.");
         }
         String text = "";
         if (contentType != null && contentType.equals("application/pdf")) {
-            text = extractTextFromPdf(java.nio.file.Files.readAllBytes(file.toPath()));
+            try (PDDocument document = Loader.loadPDF(file)) {
+                text = new PDFTextStripper().getText(document);
+            }
         } else if (contentType != null && (contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") 
                 || contentType.equals("application/msword"))) {
             try (java.io.InputStream is = java.nio.file.Files.newInputStream(file.toPath())) {
                 text = extractTextFromDocx(is);
             }
         } else {
-            throw new IllegalArgumentException("Unsupported file type: " + contentType);
+            throw new IllegalArgumentException("Unsupported uploaded document type.");
         }
         if (text == null || text.trim().isEmpty()) {
-            throw new IllegalArgumentException("No readable text could be extracted from file: " + filePath);
+            throw new IllegalArgumentException("No readable text could be extracted from the uploaded document.");
         }
         return text;
     }
