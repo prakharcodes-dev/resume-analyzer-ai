@@ -6,6 +6,7 @@ import com.career.resumeanalyzer.repository.UploadedResumeRepository;
 import com.career.resumeanalyzer.repository.UserRepository;
 import com.career.resumeanalyzer.service.RecruiterService;
 import com.career.resumeanalyzer.service.ResumeParserService;
+import com.career.resumeanalyzer.service.ResumeUploadValidator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,18 +19,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.nio.file.Files;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping("/api/recruiter")
 public class RecruiterController {
 
-    private static final String UPLOAD_DIR = "uploads";
-    private static final Long DEFAULT_USER_ID = 1L;
+    @Value("${app.upload-dir:./data/uploads}")
+    private String uploadDirectory;
 
     @Autowired
     private UserRepository userRepository;
@@ -43,6 +46,9 @@ public class RecruiterController {
     @Autowired
     private RecruiterService recruiterService;
 
+    @Autowired
+    private ResumeUploadValidator uploadValidator;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
@@ -55,74 +61,75 @@ public class RecruiterController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("{\"error\": \"No files selected for upload.\"}");
         }
 
-        User user = userRepository.findById(DEFAULT_USER_ID)
-                .orElseGet(() -> userRepository.save(new User("guest@career.com", "ROLE_USER")));
+        User user = currentUser();
 
-        File uploadFolder = new File(UPLOAD_DIR);
-        if (!uploadFolder.exists()) {
-            uploadFolder.mkdirs();
+        Path uploadFolder = Paths.get(uploadDirectory).toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(uploadFolder);
+        } catch (java.io.IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("{\"error\": \"Upload storage is unavailable.\"}");
         }
 
         ArrayNode resultsArray = objectMapper.createArrayNode();
 
         for (MultipartFile file : files) {
             ObjectNode fileResult = objectMapper.createObjectNode();
-            String originalFileName = file.getOriginalFilename();
+            String originalFileName = safeOriginalFileName(file.getOriginalFilename());
             fileResult.put("fileName", originalFileName);
 
-            if (file.isEmpty()) {
+            String validatedContentType;
+            try {
+                validatedContentType = uploadValidator.validate(file);
+            } catch (IOException | IllegalArgumentException e) {
                 fileResult.put("status", "FAILED");
-                fileResult.put("error", "File is empty.");
-                resultsArray.add(fileResult);
-                continue;
-            }
-
-            String contentType = file.getContentType();
-            if (contentType == null || (!contentType.equals("application/pdf") &&
-                !contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document") &&
-                !contentType.equals("application/msword"))) {
-                fileResult.put("status", "FAILED");
-                fileResult.put("error", "Unsupported file type. Please upload PDF or DOCX.");
+                fileResult.put("error", "Only valid PDF and DOCX files under 10 MB are accepted.");
                 resultsArray.add(fileResult);
                 continue;
             }
 
             try {
-                String uniqueFileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 6) + "_" + originalFileName;
-                Path filePath = Paths.get(UPLOAD_DIR, uniqueFileName);
-                Files.write(filePath, file.getBytes());
+                Path filePath = uploadFolder.resolve(UUID.randomUUID() + ".upload");
+                try (var input = file.getInputStream()) {
+                    Files.copy(input, filePath);
+                }
 
                 UploadedResume resume = new UploadedResume(
                         user,
                         originalFileName,
                         filePath.toString(),
-                        file.getContentType(),
+                        validatedContentType,
                         file.getSize(),
                         "PENDING"
                 );
-                resume = uploadedResumeRepository.save(resume);
 
                 try {
                     String rawText = resumeParserService.extractRawText(file);
-                    String parsedJson = resumeParserService.parseResume(file);
+                    String parsedJson = resumeParserService.parseResume(rawText, originalFileName);
                     resume.setRawText(rawText);
                     resume.setParsedContent(parsedJson);
                     resume.setParseStatus("SUCCESS");
-                    resume = uploadedResumeRepository.save(resume);
-
                     ObjectNode candidateSummary = recruiterService.getCandidateSummary(resume);
                     candidateSummary.put("status", "SUCCESS");
                     resultsArray.add(candidateSummary);
+                    uploadedResumeRepository.save(resume);
                 } catch (Exception ex) {
                     resume.setParseStatus("FAILED");
+                    Files.deleteIfExists(filePath);
+                    resume.setFilePath("");
+                    resume.setParsedContent("{\"error\": \"The document could not be parsed.\"}");
                     uploadedResumeRepository.save(resume);
-                    fileResult.put("status", "FAILED");
-                    fileResult.put("error", "Parsing failed: " + ex.getMessage());
-                    resultsArray.add(fileResult);
+                    ObjectNode failedSummary = recruiterService.getCandidateSummary(resume);
+                    failedSummary.put("status", "FAILED");
+                    failedSummary.put("error", "The document could not be parsed.");
+                    resultsArray.add(failedSummary);
+                }
+                if ("SUCCESS".equals(resume.getParseStatus()) && Files.exists(filePath)) {
+                    uploadedResumeRepository.save(resume);
                 }
             } catch (Exception e) {
                 fileResult.put("status", "FAILED");
-                fileResult.put("error", "Upload error: " + e.getMessage());
+                fileResult.put("error", "Unable to store the uploaded document.");
                 resultsArray.add(fileResult);
             }
         }
@@ -134,12 +141,26 @@ public class RecruiterController {
         return ResponseEntity.ok(response);
     }
 
+    private String safeOriginalFileName(String originalFileName) {
+        if (originalFileName == null || originalFileName.isBlank()) return "resume";
+        String normalized = originalFileName.replace('\\', '/');
+        String baseName = normalized.substring(normalized.lastIndexOf('/') + 1);
+        String safeName = baseName.replaceAll("[^\\p{L}\\p{N}._() -]", "_").trim();
+        return safeName.isEmpty() ? "resume" : safeName;
+    }
+
+    private User currentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user no longer exists."));
+    }
+
     /**
      * Get all processed candidate resumes enriched with ATS score, degree level, experience, and rank.
      */
     @GetMapping("/candidates")
     public ResponseEntity<?> getAllCandidates() {
-        List<UploadedResume> resumes = uploadedResumeRepository.findAll();
+        List<UploadedResume> resumes = uploadedResumeRepository.findByUserId(currentUser().getId());
         List<ObjectNode> candidateList = new ArrayList<>();
 
         for (UploadedResume r : resumes) {
@@ -171,7 +192,7 @@ public class RecruiterController {
      */
     @PostMapping("/candidates/{id}/shortlist")
     public ResponseEntity<?> toggleShortlist(@PathVariable("id") Long id, @RequestBody(required = false) JsonNode body) {
-        Optional<UploadedResume> opt = uploadedResumeRepository.findById(id);
+        Optional<UploadedResume> opt = uploadedResumeRepository.findByIdAndUserId(id, currentUser().getId());
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"error\": \"Candidate not found.\"}");
         }
@@ -195,7 +216,7 @@ public class RecruiterController {
      */
     @GetMapping("/candidates/{id}/report")
     public ResponseEntity<byte[]> downloadCandidateReport(@PathVariable("id") Long id) {
-        Optional<UploadedResume> opt = uploadedResumeRepository.findById(id);
+        Optional<UploadedResume> opt = uploadedResumeRepository.findByIdAndUserId(id, currentUser().getId());
         if (opt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }

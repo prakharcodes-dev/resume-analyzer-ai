@@ -1,11 +1,28 @@
+const originalFetch = window.fetch.bind(window);
+const readCookie = (name) => document.cookie.split('; ').find((cookie) => cookie.startsWith(`${name}=`))?.split('=').slice(1).join('=');
+window.fetch = (input, options = {}) => {
+    const method = (options.method || (input instanceof Request ? input.method : 'GET')).toUpperCase();
+    const headers = new Headers(options.headers || (input instanceof Request ? input.headers : undefined));
+    const csrf = readCookie('XSRF-TOKEN');
+    if (csrf && !['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+        headers.set('X-XSRF-TOKEN', decodeURIComponent(csrf));
+    }
+    return originalFetch(input, { ...options, headers, credentials: 'same-origin' }).then((response) => {
+        if (response.status === 401 && !location.pathname.startsWith('/api/auth/')) showAuthScreen();
+        return response;
+    });
+};
+
 // ----------------------------------------------------
 // STATE MANAGEMENT
 // ----------------------------------------------------
 const state = {
+    auth: null,
+    registerMode: false,
     currentView: 'dashboard',
     profile: {
-        fullName: 'Guest User',
-        email: 'guest@career.com',
+        fullName: '',
+        email: '',
         phone: '',
         linkedinUrl: '',
         githubUrl: '',
@@ -38,6 +55,10 @@ const state = {
 // INITIALIZATION
 // ----------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+    initAuthentication();
+});
+
+function initializeWorkspace() {
     initThemeToggle();
     initRouting();
     initSearch();
@@ -50,7 +71,72 @@ document.addEventListener('DOMContentLoaded', () => {
     initRecruiterDashboard();
     loadProfile();
     loadResumes();
-});
+}
+
+function initAuthentication() {
+    const form = document.getElementById('auth-form');
+    document.getElementById('auth-switch').addEventListener('click', () => {
+        state.registerMode = !state.registerMode;
+        document.getElementById('auth-title').textContent = state.registerMode ? 'Create your account' : 'Sign in';
+        document.getElementById('auth-description').textContent = state.registerMode ? 'Create a private resume workspace.' : 'Sign in to your private resume workspace.';
+        document.getElementById('auth-submit').textContent = state.registerMode ? 'Create account' : 'Sign in';
+        document.getElementById('auth-switch').textContent = state.registerMode ? 'Already have an account? Sign in' : 'Create an account';
+        document.getElementById('auth-confirm-wrap').hidden = !state.registerMode;
+        document.getElementById('auth-recruiter-wrap').hidden = true;
+        document.getElementById('recruiter-switch').hidden = !state.registerMode;
+        document.getElementById('auth-password').autocomplete = state.registerMode ? 'new-password' : 'current-password';
+        document.getElementById('auth-error').hidden = true;
+    });
+    document.getElementById('recruiter-switch').addEventListener('click', () => {
+        const keyField = document.getElementById('auth-recruiter-wrap');
+        keyField.hidden = !keyField.hidden;
+        document.getElementById('recruiter-switch').textContent = keyField.hidden ? 'Have a recruiter access key?' : 'Hide recruiter access key';
+    });
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        location.reload();
+    });
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const email = document.getElementById('auth-email').value.trim();
+        const password = document.getElementById('auth-password').value;
+        const error = document.getElementById('auth-error');
+        error.hidden = true;
+        try {
+            if (state.registerMode) {
+                if (password !== document.getElementById('auth-confirm-password').value) throw new Error('Passwords do not match.');
+                const registration = await fetch('/api/auth/register', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+                        email, password,
+                        recruiterKey: document.getElementById('auth-recruiter-key').value || null
+                    })
+                });
+                if (!registration.ok) throw new Error((await registration.json()).error || 'Unable to create account.');
+            }
+            const login = await fetch('/api/auth/login', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password })
+            });
+            if (!login.ok) throw new Error((await login.json()).error || 'Unable to sign in.');
+            state.auth = await login.json();
+            await fetch('/api/auth/csrf');
+            location.reload();
+        } catch (err) {
+            error.textContent = err.message;
+            error.hidden = false;
+        }
+    });
+    fetch('/api/auth/csrf').then(() => fetch('/api/auth/me')).then(async (response) => {
+        if (!response.ok) throw new Error('Sign in required.');
+        state.auth = await response.json();
+        document.getElementById('auth-screen').hidden = true;
+        initializeWorkspace();
+    }).catch(showAuthScreen);
+}
+
+function showAuthScreen() {
+    const screen = document.getElementById('auth-screen');
+    if (screen) screen.hidden = false;
+}
 
 // ----------------------------------------------------
 // VIEW ROUTING
@@ -155,13 +241,29 @@ async function loadResumes() {
 function updateProfileUI() {
     const prof = state.profile || {};
 
-    // Set Welcome Display & Top Header to Guest User consistently
-    const firstName = prof.fullName ? prof.fullName.split(' ')[0] : 'Guest';
+    const fullName = prof.fullName || state.auth?.email || 'Account';
+    const firstName = fullName.split(' ')[0];
     const welcomeNameEl = document.getElementById('welcome-name');
     if (welcomeNameEl) welcomeNameEl.textContent = firstName || 'Guest User';
 
     const userDisplayNameEl = document.getElementById('user-display-name');
-    if (userDisplayNameEl) userDisplayNameEl.textContent = 'Guest User';
+    if (userDisplayNameEl) userDisplayNameEl.textContent = fullName;
+    const accountEmail = state.auth?.email || '';
+    const statusEmail = document.getElementById('status-user-email');
+    if (statusEmail) statusEmail.textContent = accountEmail;
+    const initials = fullName.charAt(0).toUpperCase();
+    ['status-avatar', 'header-avatar'].forEach((id) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = initials;
+    });
+    const recruiterLink = document.querySelector('.nav-item[data-view="recruiter"]');
+    if (recruiterLink) {
+        const canRecruit = state.auth?.role === 'ROLE_RECRUITER';
+        recruiterLink.style.display = canRecruit ? '' : 'none';
+        if (recruiterLink.previousElementSibling?.classList.contains('nav-section-label')) {
+            recruiterLink.previousElementSibling.style.display = canRecruit ? '' : 'none';
+        }
+    }
 
     // Form inputs
     const profName = document.getElementById('prof-name');
@@ -527,12 +629,12 @@ function handleUpload(file) {
     }
 
     const fileNameLower = (file.name || '').toLowerCase();
-    const validExt = fileNameLower.endsWith('.pdf') || fileNameLower.endsWith('.docx') || fileNameLower.endsWith('.doc');
+    const validExt = fileNameLower.endsWith('.pdf') || fileNameLower.endsWith('.docx');
     const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
     const validMime = file.type && allowedTypes.includes(file.type);
 
     if (!validExt && !validMime) {
-        showNotification('Invalid file format! Please upload a PDF (.pdf) or Word document (.docx / .doc).', 'danger');
+        showNotification('Invalid file format! Please upload a PDF (.pdf) or Word document (.docx).', 'danger');
         return;
     }
 
@@ -566,6 +668,8 @@ function handleUpload(file) {
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/resumes/upload', true);
+    const csrfCookie = readCookie('XSRF-TOKEN');
+    if (csrfCookie) xhr.setRequestHeader('X-XSRF-TOKEN', decodeURIComponent(csrfCookie));
 
     // Monitor upload progress
     xhr.upload.onprogress = (e) => {
@@ -583,17 +687,23 @@ function handleUpload(file) {
 
     xhr.onload = () => {
         if (xhr.status === 200) {
+            let uploadedResumeData = null;
+            try {
+                uploadedResumeData = JSON.parse(xhr.responseText);
+            } catch (e) {}
+            if (uploadedResumeData?.parseStatus === 'FAILED') {
+                showNotification('The file was stored, but its contents could not be parsed.', 'danger');
+                progressText.textContent = 'Parsing failed.';
+                progressFill.style.backgroundColor = 'var(--danger)';
+                loadResumes();
+                return;
+            }
             progressFill.style.width = '100%';
             progressPercent.textContent = '100%';
             progressText.textContent = 'Parsing complete!';
             
             showNotification('Resume uploaded and parsed successfully!', 'success');
             
-            let uploadedResumeData = null;
-            try {
-                uploadedResumeData = JSON.parse(xhr.responseText);
-            } catch (e) {}
-
             // Reload tables, profile dashboard, and render analysis summary
             setTimeout(() => {
                 progressContainer.style.display = 'none';
@@ -3076,7 +3186,18 @@ async function toggleCandidateShortlist(candidateId) {
 }
 
 function downloadCandidateReport(candidateId) {
-    window.open(`/api/recruiter/candidates/${candidateId}/report`, '_blank');
+    fetch(`/api/recruiter/candidates/${candidateId}/report`).then(async response => {
+        if (!response.ok) throw new Error('Unable to download this candidate report.');
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Candidate_Report_${candidateId}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }).catch(error => showNotification(error.message, 'danger'));
 }
 
 function renderSideBySideComparison() {

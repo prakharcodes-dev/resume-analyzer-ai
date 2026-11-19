@@ -1,5 +1,6 @@
 package com.career.resumeanalyzer.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +16,10 @@ public class User {
 
     @Column(nullable = false)
     private String role;
+
+    @JsonIgnore
+    @Column(name = "password_hash")
+    private String passwordHash;
 
     // Constructors
     public User() {}
@@ -47,5 +52,13 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 }

@@ -1,5 +1,6 @@
 package com.career.resumeanalyzer.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -69,6 +70,7 @@ public class UploadedResume {
         this.id = id;
     }
 
+    @JsonIgnore
     public User getUser() {
         return user;
     }
@@ -85,6 +87,7 @@ public class UploadedResume {
         this.fileName = fileName;
     }
 
+    @JsonIgnore
     public String getFilePath() {
         return filePath;
     }
@@ -125,6 +128,7 @@ public class UploadedResume {
         this.parseStatus = parseStatus;
     }
 
+    @JsonIgnore
     public String getParsedContent() {
         return parsedContent;
     }
@@ -133,6 +137,7 @@ public class UploadedResume {
         this.parsedContent = parsedContent;
     }
 
+    @JsonIgnore
     public String getRawText() {
         return rawText;
     }

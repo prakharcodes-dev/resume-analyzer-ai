@@ -4,6 +4,7 @@ import com.career.resumeanalyzer.model.UploadedResume;
 import com.career.resumeanalyzer.model.UserProfile;
 import com.career.resumeanalyzer.repository.UploadedResumeRepository;
 import com.career.resumeanalyzer.repository.UserProfileRepository;
+import com.career.resumeanalyzer.repository.UserRepository;
 import com.career.resumeanalyzer.service.TemplateService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,12 +15,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/templates")
 public class TemplateController {
-
-    private static final Long DEFAULT_USER_ID = 1L;
 
     @Autowired
     private TemplateService templateService;
@@ -29,6 +29,9 @@ public class TemplateController {
 
     @Autowired
     private UploadedResumeRepository uploadedResumeRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -45,8 +48,11 @@ public class TemplateController {
         // Check if explicit resumeId is requested
         if (requestBody.has("resumeId") && !requestBody.get("resumeId").isNull() && requestBody.get("resumeId").asLong() > 0) {
             Long resumeId = requestBody.get("resumeId").asLong();
-            Optional<UploadedResume> opt = uploadedResumeRepository.findById(resumeId);
-            if (opt.isPresent() && opt.get().getParsedContent() != null) {
+            Optional<UploadedResume> opt = uploadedResumeRepository.findByIdAndUserId(resumeId, currentUserId());
+            if (opt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(java.util.Map.of("error", "Resume not found."));
+            }
+            if (opt.get().getParsedContent() != null) {
                 try {
                     resumeData = objectMapper.readTree(opt.get().getParsedContent());
                 } catch (Exception ignored) {}
@@ -55,7 +61,7 @@ public class TemplateController {
 
         // Fallback to active user profile if no resumeData found
         if (resumeData == null) {
-            Optional<UserProfile> profileOpt = userProfileRepository.findByUserId(DEFAULT_USER_ID);
+            Optional<UserProfile> profileOpt = userProfileRepository.findByUserId(currentUserId());
             if (profileOpt.isPresent()) {
                 UserProfile profile = profileOpt.get();
                 ObjectNode node = objectMapper.createObjectNode();
@@ -78,5 +84,11 @@ public class TemplateController {
 
         ObjectNode result = templateService.renderTemplate(templateId, resumeData);
         return ResponseEntity.ok(result);
+    }
+
+    private Long currentUserId() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email).map(com.career.resumeanalyzer.model.User::getId)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user no longer exists."));
     }
 }
